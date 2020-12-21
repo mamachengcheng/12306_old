@@ -1,29 +1,27 @@
 version: '3'
 services:
-  web:
-    build: .
-    command: go run main.go
-    ports:
-      - 5000:8080
-    networks:
-      - 12306-net
-
   redis:
     image: redis:latest
-    networks:
-      12306-net:
+    network_mode: "bridge"
+    volumes:
+      - "./conf/redis/data:/data"
+    ports:
+      - "6370:6379"
 
   mysql:
     image: mysql:latest
     restart: always
-    networks:
-      - 12306-net
+    network_mode: "bridge"
     environment:
       MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_USER: 'test'
+      MYSQL_PASS: '123456'
       MYSQL_DATABASE: 12306
       TZ: Asia/Shanghai
+    volumes:
+      - "./conf/mysql/db:/var/lib/mysql"
+      - "./conf/mysql/my.cnf:/etc/my.cnf"
+      - "./conf/mysql/init:/docker-entrypoint-initdb.d/"
     ports:
-      - 3306:3306
+      - "3300:3306"
 
-networks:
-  12306-net:

@@ -1,55 +1,114 @@
 # 铁路12306数据模型文档
 
-## 公共
+## 公共部分
 
-| 编号 | 字段       | 数据类型 | 解释 | 字段标签 | 备注 |
-| ---- | ---------- | -------- | ---- | -------- | ---- |
-| 1    | id         |          |      |          |      |
-| 2    | created_at |          |      |          |      |
-| 3    | updated_at |          |      |          |      |
-| 4    | deleted_at |          |      |          |      |
-
-
-
-## user 用户
-
-| 编号 | 列名                 | 数据类型 | 解释               | 字段标签                              | 备注                                                         |
-| ---- | -------------------- | -------- | ------------------ | ------------------------------------- | ------------------------------------------------------------ |
-|      | uid                  |          | 用户ID             | primaryKey;unique;default:;not null;- |                                                              |
-|      | user_name            | string   | 用户名             | not null;check:;                      | 字母数字或者下划线"-"，6-30位                                |
-|      | password             | string   | 密码               | not null;check:;                      | 不少于6位                                                    |
-|      | name                 | string   | 姓名               | not null;check:;                      | 真实姓名                                                     |
-|      | country              | uint     | 国家               | not null;check:;                      | +86                                                          |
-|      | certificate_type     | uint     | 证件类型           | default:                              | 中国居民身份证、港澳居民来往内地通行证、台湾居民来往大陆通行证和护照 |
-|      | sex                  | bool     | 性别               |                                       | 男和女                                                       |
-|      | birthday             | date     | 出生日期           |                                       |                                                              |
-|      | certificate_deadline | date     | 证件有效期截至日期 |                                       |                                                              |
-|      | certificate          | string   | 证件号码           | unique                                |                                                              |
-|      | mobile_phone         | string   | 手机号码           | unique                                | 默认+86                                                      |
-|      | fixed_phone          | string   | 固定电话           |                                       |                                                              |
-|      | mail                 | string   | 电子邮箱           | unique                                |                                                              |
-|      | address              | string   | 地址               |                                       | 省-市-区-街道-楼牌号（）                                     |
-|      | postcode             | uint     | 邮编               |                                       |                                                              |
-|      | passenger_type       | uint     | 旅客类型           |                                       | 成人、儿童、学生和参军                                       |
-|      | user_type            | uint     | 用户类型           |                                       |                                                              |
-|      | check_status         | uint     | 审核状态           |                                       | 审核中、审核通过和审核失败                                   |
-|      | user_status          | uint     | 用户状态           |                                       | 可用、禁用                                                   |
+| 编号 | 字段       | 数据类型  | 解释     | 备注 | 字段标签 |
+| ---- | ---------- | --------- | -------- | ---- | -------- |
+| 1    | id         | uint      | ID       |      |          |
+| 2    | created_at | time.Time | 创建时间 |      |          |
+| 3    | updated_at | time.Time | 更新时间 |      |          |
+| 4    | deleted_at | time.Time | 删除时间 |      |          |
 
 
 
-## passenger 乘客
+## 用户部分
 
-| 编号 | 字段                 | 数据类型 | 解释               | 备注                       |
-| ---- | -------------------- | -------- | ------------------ | -------------------------- |
-|      | name                 | string   | 姓名               | 真实姓名                   |
-|      | certificate_type     | uint     | 证件类型           |                            |
-|      | sex                  | bool     | 性别               | 男和女                     |
-|      | birthday             | data     | 出生日期           |                            |
-|      | certificate_deadline | data     | 证件有效期截至日期 |                            |
-|      | certificate          | string   | 证件号码           |                            |
-|      | certificate_type     | uint     | 旅客类型           |                            |
-|      | mobile_phone         | string   | 手机号码           | 默认+86                    |
-|      | mail                 | string   | 电子邮箱           |                            |
-|      | check_status         | uint     | 审核状态           | 审核中、审核通过和审核失败 |
-|      | user_status          | uint     | 用户状态           | 可用、禁用                 |
+备注：User表与Passenger表为has many关联
+
+### User 用户
+
+| 编号 | 列名              | 数据类型  | 解释       | 备注                          | 字段标签                              |
+| ---- | ----------------- | --------- | ---------- | ----------------------------- | ------------------------------------- |
+| 1    | UID               | string    | 用户ID     |                               | primaryKey;unique;default:;not null;- |
+| 2    | UserName          | string    | 用户名     | 字母数字或者下划线"-"，6-30位 | not null;check:;                      |
+| 3    | Password          | string    | 密码       | 不少于6位                     | not null;check:;                      |
+| 4    | User              | Passenger | 乘客       |                               |                                       |
+| 5    | RegularPassengers | Passenger | 常用乘车人 |                               |                                       |
+| 6    | Orders            | Order     | 订单       |                               |                                       |
+
+### Passenger 乘客
+
+| 编号 | 字段                | 数据类型 | 解释               | 备注                       | 字段标签 |
+| ---- | ------------------- | -------- | ------------------ | -------------------------- | -------- |
+| 1    | Name                | string   | 姓名               | 真实姓名                   |          |
+| 2    | CertificateType     | uint     | 证件类型           |                            |          |
+| 3    | Sex                 | bool     | 性别               | 男和女                     |          |
+| 4    | Birthday            | data     | 出生日期           |                            |          |
+| 5    | Country             | uint     | 国家               | +86                        |          |
+| 6    | CertificateDeadline | data     | 证件有效期截至日期 |                            |          |
+| 7    | Certificate         | string   | 证件号码           |                            |          |
+| 8    | PassengerType       | uint     | 旅客类型           |                            |          |
+| 9    | MobilePhone         | string   | 手机号码           | 默认+86                    |          |
+| 10   | Email               | string   | 电子邮箱           |                            |          |
+| 11   | CheckStatus         | uint     | 审核状态           | 审核中、审核通过和审核失败 |          |
+| 12   | UserStatus          | uint     | 用户状态           | 可用、禁用                 |          |
+
+## 列车部分
+
+### Train 列车
+
+| 编号 | 字段      | 数据类型 | 解释     | 备注 | 字段标签 |
+| ---- | --------- | -------- | -------- | ---- | -------- |
+| 1    | TrainNo   | string   | 列车代号 |      |          |
+| 2    | TrainType | uint     | 列车类型 |      |          |
+| 3    | Seats     | Seat     | 座位     |      |          |
+
+### Seat 座位
+
+| 编号 | 字段       | 数据类型 | 解释     | 备注 | 字段标签 |
+| ---- | ---------- | -------- | -------- | ---- | -------- |
+| 1    | SeatNo     | string   | 座位编号 |      |          |
+| 2    | CarNumber  | uint     | 车厢编号 |      |          |
+| 3    | Price      | Train    | 列车     |      |          |
+| 4    | price      | float    | 票价     |      |          |
+| 5    | SeatType   | uint     | 座位类型 |      |          |
+| 6    | SeatStatus | uint     | 座位状态 |      |          |
+
+### Schedule 班次
+
+| 编号 | 字段          | 数据类型 | 解释     | 备注 | 字段标签 |
+| ---- | ------------- | -------- | -------- | ---- | -------- |
+| 1    | train         | Train    | 列车     |      |          |
+| 2    | start_station | Station  | 终点站   |      |          |
+| 3    | end_station   | Sation   | 起点站   |      |          |
+| 4    | start_time    | time     | 出发时间 |      |          |
+| 5    | end_time      | time     | 到达时间 |      |          |
+| 6    | stop          | Stop     | 经停站   |      |          |
+| 7    | duration      | uint     | 沿途时间 |      |          |
+
+### Station 车站
+
+| 编号 | 字段         | 数据类型 | 解释     | 备注 | 字段标签 |
+| ---- | ------------ | -------- | -------- | ---- | -------- |
+| 1    | station_name | string   | 车站名   |      |          |
+| 2    | city         | string   | 城市名   |      |          |
+| 3    | city_pinyin  | string   | 拼音     |      |          |
+| 4    | first_pinyin | string   | 首字母   |      |          |
+| 5    | city_code    | string   | 城市代码 |      |          |
+| 6    | station_code | string   | 车站代码 |      |          |
+
+### Stop 经停站
+
+| 编号 | 字段          | 数据类型  | 解释     | 备注 | 字段标签 |
+| ---- | ------------- | --------- | -------- | ---- | -------- |
+| 1    | schedule      | Schedule  | 班次     |      |          |
+| 2    | serial_number | uint      | 站序     |      |          |
+| 3    | start_station | Station   | 起始站   |      |          |
+| 4    | end_station   | Station   | 终止站   |      |          |
+| 5    | start_time    | time.Time | 发车时间 |      |          |
+| 6    | end_time      | time.Time | 到达时间 |      |          |
+| 7    | duration      | uint      | 沿途时间 |      |          |
+
+## 订单部分
+
+### Order 订单
+
+| 编号 | 字段      | 数据类型  | 解释     | 备注 | 字段标签 |
+| ---- | --------- | --------- | -------- | ---- | -------- |
+| 1    | trade_no  | string    | 交易编号 |      |          |
+| 2    | passenger | Passenger | 乘客     |      |          |
+| 3    | user      | User      | 用户     |      |          |
+| 4    | schedule  | Schedule  | 班次     |      |          |
+| 5    | status    | uint      | 订单状态 |      |          |
+| 6    | seat      | Seat      | 座位     |      |          |
 
