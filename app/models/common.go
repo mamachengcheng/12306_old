@@ -1,6 +1,8 @@
 package models
 
-import "github.com/mamachengcheng/12306/app/utils"
+import (
+	"github.com/mamachengcheng/12306/app/utils"
+)
 
 func InitModel() {
 	utils.MysqlDB.AutoMigrate(
@@ -8,9 +10,8 @@ func InitModel() {
 		&Passenger{},
 		&Order{},
 		&Train{},
-		&Seat{},
-		&Stop{},
-		&Station{},
 		&Schedule{},
+		&Stop{},
+		&Seat{},
 	)
 }

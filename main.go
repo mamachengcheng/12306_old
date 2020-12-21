@@ -22,5 +22,4 @@ func main() {
 
 	address := server.Key("http").String() + ":" + server.Key("port").String()
 	router.Run(address)
-
 }

@@ -1,16 +1,10 @@
 package models
 
 import (
-	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
 	"time"
 )
 
-func init() {
-	if utils.MysqlDBErr == nil && !utils.MysqlDB.Migrator().HasTable(&User{}) {
-		_ = utils.MysqlDB.Migrator().CreateTable(&User{})
-	}
-}
 
 type User struct {
 	gorm.Model
@@ -19,7 +13,6 @@ type User struct {
 	Password    string `gorm:"not null" json:"password"`
 	PassengerID uint
 	Passengers  []Passenger `gorm:"foreignKey:UserRefer" json:"regular_passengers"`
-	Orders      []Order     `json:"orders"`
 
 	Name                string    `gorm:"not null" json:"name"`
 	CertificateType     uint      `json:"certificate_type"`
@@ -36,6 +29,7 @@ type User struct {
 }
 
 type Passenger struct {
+	gorm.Model
 	Name                string    `gorm:"not null" json:"name"`
 	CertificateType     uint      `json:"certificate_type"`
 	Sex                 bool      `json:"sex"`
@@ -49,4 +43,5 @@ type Passenger struct {
 	CheckStatus         uint      `json:"check_status"`
 	UserStatus          uint      `json:"user_status"`
 	UserRefer           uint
+	Orders      []Order     `gorm:"foreignKey:PassengerRefer" json:"orders"`
 }
