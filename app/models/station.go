@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 type Train struct {
 	gorm.Model
 	TrainNo   string `gorm:"not null" json:"train_no"`
@@ -19,6 +18,7 @@ type Seat struct {
 	SeatNo     string `gorm:"not null" json:"seat_no"`
 	CarNumber  uint   `gorm:"not null" json:"car_number"`
 	SeatType   uint   `gorm:"not null" json:"seat_type"`
+	State      uint64 `gorm:"not null" json:"state"`
 	TrainRefer uint
 }
 
