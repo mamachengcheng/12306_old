@@ -52,7 +52,6 @@ type Stop struct {
 	StartStationRefer uint
 	EndStationRefer   uint
 	StartStation      Station   `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
-	EndStation        Station   `gorm:"foreignKey:EndStationRefer;not null" json:"end_station"`
 	StartTime         time.Time `gorm:"not null" json:"start_time"`
 	EndTime           time.Time `gorm:"not null" json:"end_time"`
 	Duration          uint      `gorm:"not null" json:"duration"`
