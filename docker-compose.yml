@@ -6,7 +6,7 @@ services:
     volumes:
       - "./conf/redis/data:/data"
     ports:
-      - "6370:6379"
+      - "6379:6379"
 
   mysql:
     image: mysql:latest
