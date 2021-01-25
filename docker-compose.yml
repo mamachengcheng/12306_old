@@ -23,5 +23,5 @@ services:
       - "./conf/mysql/my.cnf:/etc/my.cnf"
       - "./conf/mysql/init:/docker-entrypoint-initdb.d/"
     ports:
-      - "3300:3306"
+      - "3306:3306"
 
