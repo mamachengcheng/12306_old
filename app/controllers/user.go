@@ -11,32 +11,48 @@ import (
 	"time"
 )
 
-func Register(c *gin.Context) {
+func RegisterAPI(c *gin.Context) {
 
-	user := serializers.User{}
-	c.BindJSON(&user)
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "注册成功",
+	}
 
-	const format = "2006-01-02"
-	birthday, _ := time.Parse(format, user.UserInformation.Birthday)
-	certificateDeadline, _ := time.Parse(format, user.UserInformation.CertificateDeadline)
+	data := serializers.User{}
+	c.BindJSON(&data)
 
-	utils.MysqlDB.Create(&models.User{UserName: user.UserName, Password: user.Password, UserInformation: models.Passenger{
-		Name:                user.UserInformation.Name,
-		CertificateType:     user.UserInformation.CertificateType,
-		Sex:                 user.UserInformation.Sex,
-		Birthday:            birthday,
-		Country:             user.UserInformation.Country,
-		CertificateDeadline: certificateDeadline,
-		Certificate:         user.UserInformation.Certificate,
-		PassengerType:       user.UserInformation.PassengerType,
-		MobilePhone:         user.UserInformation.MobilePhone,
-		Email:               user.UserInformation.Email,
-		CheckStatus:         user.UserInformation.CheckStatus,
-		UserStatus:          user.UserInformation.UserStatus,
-	}})
+	user := models.User{}
+	result := utils.MysqlDB.Where("user_name = ?", data.UserName).First(&user)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		const format = "2006-01-02"
+		birthday, _ := time.Parse(format, data.UserInformation.Birthday)
+		certificateDeadline, _ := time.Parse(format, data.UserInformation.CertificateDeadline)
+
+		utils.MysqlDB.Create(&models.User{UserName: data.UserName, Password: data.Password, UserInformation: models.Passenger{
+			Name:                data.UserInformation.Name,
+			CertificateType:     data.UserInformation.CertificateType,
+			Sex:                 data.UserInformation.Sex,
+			Birthday:            birthday,
+			Country:             data.UserInformation.Country,
+			CertificateDeadline: certificateDeadline,
+			Certificate:         data.UserInformation.Certificate,
+			PassengerType:       data.UserInformation.PassengerType,
+			MobilePhone:         data.UserInformation.MobilePhone,
+			Email:               data.UserInformation.Email,
+			CheckStatus:         data.UserInformation.CheckStatus,
+			UserStatus:          data.UserInformation.UserStatus,
+		}})
+	} else {
+		response.Code = 201
+		response.Msg = "用户已存在"
+	}
+
+	utils.StatusOKResponse(response, c)
 }
 
-func Login(c *gin.Context) {
+func LoginAPI(c *gin.Context) {
 
 	response := utils.Response{
 		Code: 200,
@@ -50,15 +66,15 @@ func Login(c *gin.Context) {
 	password := data.Password
 
 	user := models.User{}
-	result := utils.MysqlDB.Preload("UserInformation").Where("user_name = ? AND password = ?", userName, password).Find(&user)
+	result := utils.MysqlDB.Preload("UserInformation").Where("user_name = ? AND password = ?", userName, password).First(&user)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		response.Code = 201
 		response.Msg = "请正确输入用户名或密码"
+	} else {
+		token, _ := middlewares.GenerateToken(userName)
+		response.Data.(map[string]interface{})["token"] = token
 	}
-
-	token, _ := middlewares.GenerateToken(userName)
-	response.Data.(map[string]interface{})["token"] = token
 
 	utils.StatusOKResponse(response, c)
 }

@@ -9,8 +9,8 @@ import (
 func InitRouter(router *gin.Engine) {
 	// User part router.
 	user := router.Group("/api/v1/user")
-	user.POST("/register", controllers.Register)
-	user.POST("/login", controllers.Login)
+	user.POST("/register", controllers.RegisterAPI)
+	user.POST("/login", controllers.LoginAPI)
 	user.Use(middlewares.JWTMiddleware())
 	{
 
