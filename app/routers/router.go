@@ -13,7 +13,9 @@ func InitRouter(router *gin.Engine) {
 	user.POST("/login", controllers.LoginAPI)
 	user.Use(middlewares.JWTMiddleware())
 	{
-
+		user.GET("/query_user_information", controllers.QueryUserInformationAPI)
+		user.GET("/query_regular_passengers", controllers.QueryRegularPassengersAPI)
+		user.POST("/add_regular_passengers", controllers.AddRegularPassengersAPI)
 	}
 
 	// Train part router.

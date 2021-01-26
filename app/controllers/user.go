@@ -78,3 +78,55 @@ func LoginAPI(c *gin.Context) {
 
 	utils.StatusOKResponse(response, c)
 }
+
+func QueryUserInformationAPI(c *gin.Context)  {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "查询成功",
+	}
+
+	claims := c.MustGet("claims").(*middlewares.Claims)
+
+	user := models.User{}
+	utils.MysqlDB.Preload("UserInformation").Where("user_name = ?", claims.Username).First(&user)
+
+	response.Data.(map[string]interface{})["user_information"] = user.UserInformation
+
+	utils.StatusOKResponse(response, c)
+}
+
+func QueryRegularPassengersAPI(c *gin.Context)  {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "查询成功",
+	}
+
+	claims := c.MustGet("claims").(*middlewares.Claims)
+
+	user := models.User{}
+	utils.MysqlDB.Preload("UserInformation").Where("user_name = ?", claims.Username).First(&user)
+
+	response.Data.(map[string]interface{})["passengers"] = user.Passengers
+
+	utils.StatusOKResponse(response, c)
+}
+
+func AddRegularPassengersAPI(c *gin.Context)  {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "查询成功",
+	}
+
+	claims := c.MustGet("claims").(*middlewares.Claims)
+
+	user := models.User{}
+	utils.MysqlDB.Preload("UserInformation").Where("user_name = ?", claims.Username).First(&user)
+
+	response.Data.(map[string]interface{})["passengers"] = user.Passengers
+
+	utils.StatusOKResponse(response, c)
+}
+

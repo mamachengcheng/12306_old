@@ -6,6 +6,7 @@ import (
 	"github.com/mamachengcheng/12306/app/resource"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gopkg.in/ini.v1"
+	"log"
 	"time"
 )
 
@@ -55,9 +56,9 @@ func ParseToken(token string) (*Claims, error) {
 
 func JWTMiddleware() gin.HandlerFunc {
 	response := utils.Response{
-		Code: 200,
+		Code: 401,
 		Data: make(map[string]interface{}),
-		Msg:  "登陆成功",
+		Msg:  "未登录",
 	}
 
 	return func(c *gin.Context) {
