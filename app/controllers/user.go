@@ -8,7 +8,28 @@ import (
 	"github.com/mamachengcheng/12306/app/serializers"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
+	"log"
 )
+
+func Register(c *gin.Context) {
+	//var (
+	//	registerSuccess = utils.SubStatus{Code: "register-success", Msg: "注册成功"}
+	//	//RegisteredError = utils.SubStatus{Code: "registered-error", Msg: "已注册"}
+	//)
+
+	data := make(map[string]interface{})
+	c.BindJSON(&data)
+	log.Printf("%v",&data)
+
+	//user := &models.User{}
+	//
+	//if utils.MysqlDBErr == nil {
+	//	utils.MysqlDB.Create(&user)
+	//	utils.DefaultResponse(resource.Success, registerSuccess.Code, nil, registerSuccess.Msg, c)
+	//} else {
+	//	utils.DefaultResponse(resource.Success, registerSuccess.Code, nil, registerSuccess.Msg, c)
+	//}
+}
 
 func Login(c *gin.Context) {
 	var (
@@ -35,18 +56,3 @@ func Login(c *gin.Context) {
 
 }
 
-func Register(c *gin.Context) {
-	var (
-		registerSuccess = utils.SubStatus{Code: "register-success", Msg: "注册成功"}
-		//RegisteredError = utils.SubStatus{Code: "registered-error", Msg: "已注册"}
-	)
-
-	user := &models.User{}
-
-	if utils.MysqlDBErr == nil {
-		utils.MysqlDB.Create(&user)
-		utils.DefaultResponse(resource.Success, registerSuccess.Code, nil, registerSuccess.Msg, c)
-	} else {
-		utils.DefaultResponse(resource.Success, registerSuccess.Code, nil, registerSuccess.Msg, c)
-	}
-}
