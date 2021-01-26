@@ -7,12 +7,11 @@ import (
 
 type User struct {
 	gorm.Model
-	UID      string
 	UserName string `gorm:"not null;unique" json:"user_name"`
 	Password string `gorm:"not null" json:"password"`
 
 	PassengerID     uint
-	UserInformation Passenger `gorm:"not null;unique" json:"user_information"`
+	UserInformation Passenger `gorm:"foreignKey:PassengerRefer;not null;unique" json:"user_information"`
 
 	Passengers []Passenger `gorm:"foreignKey:UserRefer" json:"regular_passengers"`
 }
