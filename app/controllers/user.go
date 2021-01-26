@@ -40,7 +40,6 @@ func RegisterAPI(c *gin.Context) {
 			Certificate:         data.UserInformation.Certificate,
 			PassengerType:       data.UserInformation.PassengerType,
 			MobilePhone:         data.UserInformation.MobilePhone,
-			Email:               data.UserInformation.Email,
 			CheckStatus:         data.UserInformation.CheckStatus,
 			UserStatus:          data.UserInformation.UserStatus,
 		}})
@@ -79,7 +78,7 @@ func LoginAPI(c *gin.Context) {
 	utils.StatusOKResponse(response, c)
 }
 
-func QueryUserInformationAPI(c *gin.Context)  {
+func QueryUserInformationAPI(c *gin.Context) {
 	response := utils.Response{
 		Code: 200,
 		Data: make(map[string]interface{}),
@@ -96,7 +95,11 @@ func QueryUserInformationAPI(c *gin.Context)  {
 	utils.StatusOKResponse(response, c)
 }
 
-func QueryRegularPassengersAPI(c *gin.Context)  {
+func UpdatePasswordAPI(c *gin.Context)  {
+
+}
+
+func QueryRegularPassengersAPI(c *gin.Context) {
 	response := utils.Response{
 		Code: 200,
 		Data: make(map[string]interface{}),
@@ -113,20 +116,39 @@ func QueryRegularPassengersAPI(c *gin.Context)  {
 	utils.StatusOKResponse(response, c)
 }
 
-func AddRegularPassengersAPI(c *gin.Context)  {
+func AddRegularPassengersAPI(c *gin.Context) {
 	response := utils.Response{
 		Code: 200,
 		Data: make(map[string]interface{}),
-		Msg:  "查询成功",
+		Msg:  "添加成功",
 	}
 
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
-	user := models.User{}
-	utils.MysqlDB.Preload("UserInformation").Where("user_name = ?", claims.Username).First(&user)
+	data := serializers.Passenger{}
+	c.BindJSON(&data)
 
-	response.Data.(map[string]interface{})["passengers"] = user.Passengers
+	const format = "2006-01-02"
+	birthday, _ := time.Parse(format, data.Birthday)
+	certificateDeadline, _ := time.Parse(format, data.CertificateDeadline)
+
+	user := models.User{}
+	utils.MysqlDB.Where("user_name = ?", claims.Username).First(&user)
+	utils.MysqlDB.Model(&user).Association("Passengers").Append(&models.Passenger{
+		Name:                data.Name,
+		CertificateType:     data.CertificateType,
+		Sex:                 data.Sex,
+		Birthday:            birthday,
+		Country:             data.Country,
+		CertificateDeadline: certificateDeadline,
+		Certificate:         data.Certificate,
+		PassengerType:       data.PassengerType,
+		MobilePhone:         data.MobilePhone,
+	})
 
 	utils.StatusOKResponse(response, c)
 }
 
+func UpdateRegularPassengersAPI(c *gin.Context)  {
+	
+}

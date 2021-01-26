@@ -9,6 +9,8 @@ type User struct {
 	gorm.Model
 
 	UserName    string `gorm:"not null;unique" json:"user_name"`
+	Email       string `gorm:"not null;unique" json:"email"`
+	MobilePhone string `json:"mobile_phone"`
 
 	Password string `gorm:"not null" json:"password"`
 
@@ -21,18 +23,17 @@ type Passenger struct {
 	gorm.Model
 
 	Name                string    `gorm:"not null" json:"name"`
-	CertificateType     uint      `json:"certificate_type"`
+	CertificateType     uint8     `json:"certificate_type"`
 	Sex                 bool      `json:"sex"`
 	Birthday            time.Time `json:"birthday"`
 	Country             string    `json:"country"`
 	CertificateDeadline time.Time `json:"certificate_deadline"`
 	Certificate         string    `json:"certificate"`
-	PassengerType       uint      `json:"passenger_type"`
+	PassengerType       uint8     `json:"passenger_type"`
 	MobilePhone         string    `json:"mobile_phone"`
-	Email               string    `gorm:"not null;unique" json:"email"`
-	CheckStatus         uint      `json:"check_status"`
-	UserStatus          uint      `json:"user_status"`
+	CheckStatus         uint8     `json:"check_status"`
+	UserStatus          uint8     `json:"user_status"`
 
-	UserRefer uint
+	UserRefer uint64
 	Orders    []Order `gorm:"foreignKey:PassengerRefer" json:"orders"`
 }

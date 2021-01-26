@@ -1,23 +1,32 @@
 package serializers
 
 type UserInformation struct {
-	Name                string    `json:"name"`
-	CertificateType     uint      `json:"certificate_type"`
-	Sex                 bool      `json:"sex"`
-	Birthday            string `json:"birthday"`
-	Country             string    `json:"country"`
-	CertificateDeadline string `json:"certificate_deadline"`
-	Certificate         string    `json:"certificate"`
-	PassengerType       uint      `json:"passenger_type"`
-	MobilePhone         string    `json:"mobile_phone"`
-	Email               string    `json:"email"`
-	CheckStatus         uint      `json:"check_status"`
-	UserStatus          uint      `json:"user_status"`
+	Name                string `validate:"required" json:"name"`
+	CertificateType     uint8  `validate:"required,gte=0,lte=3" json:"certificate_type"`
+	Sex                 bool   `validate:"required" json:"sex"`
+	Birthday            string `validate:"required,VerifyDateFormat" json:"birthday"`
+	Country             string `validate:"required" json:"country"`
+	CertificateDeadline string `validate:"required,VerifyDateFormat" json:"certificate_deadline"`
+	Certificate         string `validate:"required" json:"certificate"`
+	PassengerType       uint8  `validate:"required,gte=0,lte=3" json:"passenger_type"`
+	MobilePhone         string `validate:"required,numeric,len=11,VerifyMobilePhoneFormat" json:"mobile_phone"`
 }
 
 type User struct {
-	UserName        string          `json:"user_name"`
-	Password        string          `json:"password"`
-	UserInformation UserInformation `json:"user_information"`
+	Username        string          `validate:"required,VerifyUsernameFormat" json:"user_name"`
+	Password        string          `validate:"required,VerifyPasswordFormat" json:"password"`
+	Mail            string          `validate:"required,email" json:"mail"`
+	UserInformation UserInformation `validate:"required" json:"user_information"`
 }
 
+type Passenger struct {
+	Name                string `validate:"required" gorm:"not null" json:"name"`
+	CertificateType     uint   `validate:"required,gte=0,lte=3" json:"certificate_type"`
+	Sex                 bool   `validate:"required" json:"sex"`
+	Birthday            string `validate:"required,VerifyDateFormat" json:"birthday"`
+	Country             string `validate:"required" json:"country"`
+	CertificateDeadline string `validate:"required,VerifyDateFormat" json:"certificate_deadline"`
+	Certificate         string `validate:"required" json:"certificate"`
+	PassengerType       uint   `validate:"required,gte=0,lte=3" json:"passenger_type"`
+	MobilePhone         string `validate:"required,numeric,len=11,VerifyMobilePhoneFormat" json:"mobile_phone"`
+}
