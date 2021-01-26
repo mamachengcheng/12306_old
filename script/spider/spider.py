@@ -15,8 +15,8 @@ conf.read('conf.ini')
 def query_train_list(from_station: str, to_station: str, train_date: str) -> list:
     """
     Query train list.
-    :param from_station: Start station.
-    :param to_station: End station.
+    :param from_station: Start station.txt.
+    :param to_station: End station.txt.
     :param train_date: Train date
     :return: Train list.
     """
@@ -29,11 +29,11 @@ def query_train_list(from_station: str, to_station: str, train_date: str) -> lis
 def get_stopovers(from_station: str, to_station: str, train_date: str, train_num: str) -> list:
     """
     Get stopovers.
-    :param from_station: Start station.
+    :param from_station: Start station.txt.
     :param to_station: End Station.
     :param train_date: Date.
     :param train_num: Train number.
-    :return: The stopovers of station.
+    :return: The stopovers of station.txt.
     """
     pass
     # TODO: Completion code
@@ -44,7 +44,7 @@ def get_stopovers(from_station: str, to_station: str, train_date: str, train_num
 def get_train_detail_info(from_station: str, to_station: str, train_date: str, train_num: str) -> dict:
     """
     Get train detail information.
-    :param from_station: Start station.
+    :param from_station: Start station.txt.
     :param to_station: End Station.
     :param train_date: Date.
     :param train_num: Train number.
