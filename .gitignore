@@ -15,3 +15,8 @@
 # vendor/
 
 .idea
+
+conf/mysql/db
+
+venv
+__pycache__

@@ -25,7 +25,7 @@ type Seat struct {
 type Station struct {
 	gorm.Model
 	StationName string `gorm:"not null" json:"station_name"`
-	InitialName string `gorm:"not null;unique" json:"initial_name"`
+	InitialName string `gorm:"not null" json:"initial_name"`
 	Pinyin      string `gorm:"not null" json:"pinyin"`
 	CityNo      string `gorm:"not null" json:"city_no"`
 	CityName    string `gorm:"not null" json:"city_name"`

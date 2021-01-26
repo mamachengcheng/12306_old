@@ -24,4 +24,3 @@ services:
       - "./conf/mysql/init:/docker-entrypoint-initdb.d/"
     ports:
       - "3306:3306"
-
