@@ -11,7 +11,7 @@ type User struct {
 	Password string `gorm:"not null" json:"password"`
 
 	PassengerID     uint
-	UserInformation Passenger `gorm:"foreignKey:PassengerRefer;not null;unique" json:"user_information"`
+	UserInformation Passenger `gorm:"foreignKey:UserRefer;not null;unique" json:"user_information"`
 
 	Passengers []Passenger `gorm:"foreignKey:UserRefer" json:"regular_passengers"`
 }
