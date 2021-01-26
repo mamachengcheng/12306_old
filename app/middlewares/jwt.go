@@ -6,7 +6,6 @@ import (
 	"github.com/mamachengcheng/12306/app/resource"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gopkg.in/ini.v1"
-	"net/http"
 	"time"
 )
 
@@ -55,9 +54,11 @@ func ParseToken(token string) (*Claims, error) {
 }
 
 func JWTMiddleware() gin.HandlerFunc {
-	var (
-		invalidAuthTokenError = utils.SubStatus{Code: "invalid-auth-token-error", Msg: "请正确输入用户名或密码"}
-	)
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "登陆成功",
+	}
 
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("token")
@@ -66,12 +67,12 @@ func JWTMiddleware() gin.HandlerFunc {
 			c.Set("claims", claims)
 			c.Next()
 		} else {
-			jwtAbort(invalidAuthTokenError, c)
+			jwtAbort(response, c)
 		}
 	}
 }
 
-func jwtAbort(subCode utils.SubStatus, c *gin.Context) {
-	utils.DefaultResponse(http.StatusUnauthorized, subCode.Code, nil, subCode.Msg, c)
+func jwtAbort(response utils.Response, c *gin.Context) {
+	utils.StatusOKResponse(response, c)
 	c.Abort()
 }
