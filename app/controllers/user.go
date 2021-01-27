@@ -5,10 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mamachengcheng/12306/app/middlewares"
 	"github.com/mamachengcheng/12306/app/models"
+	"github.com/mamachengcheng/12306/app/resource"
 	"github.com/mamachengcheng/12306/app/serializers"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
-	"time"
 )
 
 func RegisterAPI(c *gin.Context) {
@@ -19,33 +19,43 @@ func RegisterAPI(c *gin.Context) {
 		Msg:  "注册成功",
 	}
 
-	data := serializers.User{}
+	data := serializers.Register{}
 	c.BindJSON(&data)
 
-	user := models.User{}
-	result := utils.MysqlDB.Where("user_name = ?", data.UserName).First(&user)
+	// 输入合法性检验
+	validate := serializers.GetValidate()
+	err := validate.Struct(data)
 
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		const format = "2006-01-02"
-		birthday, _ := time.Parse(format, data.UserInformation.Birthday)
-		certificateDeadline, _ := time.Parse(format, data.UserInformation.CertificateDeadline)
-
-		utils.MysqlDB.Create(&models.User{UserName: data.UserName, Password: data.Password, UserInformation: models.Passenger{
-			Name:                data.UserInformation.Name,
-			CertificateType:     data.UserInformation.CertificateType,
-			Sex:                 data.UserInformation.Sex,
-			Birthday:            birthday,
-			Country:             data.UserInformation.Country,
-			CertificateDeadline: certificateDeadline,
-			Certificate:         data.UserInformation.Certificate,
-			PassengerType:       data.UserInformation.PassengerType,
-			MobilePhone:         data.UserInformation.MobilePhone,
-			CheckStatus:         data.UserInformation.CheckStatus,
-			UserStatus:          data.UserInformation.UserStatus,
-		}})
-	} else {
+	if err != nil {
 		response.Code = 201
-		response.Msg = "用户已存在"
+		response.Msg = "参数不合法"
+	} else {
+		// 用户存在检验
+		user := models.User{}
+		err = utils.MysqlDB.Where("username = ?", data.Username).First(&user).Error
+
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			response.Code = 202
+			response.Msg = "用户已存在"
+		} else {
+
+			// 进行注册
+			sex, birthday := utils.ParseIdentityCard(data.Certificate)
+
+			utils.MysqlDB.Create(&models.User{
+				Username:    data.Username,
+				Email:       data.Email,
+				MobilePhone: data.MobilePhone,
+				Password:    data.Password,
+
+				UserInformation: models.Passenger{
+					Name:        data.Name,
+					Sex:         sex,
+					Birthday:    birthday,
+					Certificate: data.Certificate,
+					MobilePhone: data.MobilePhone,
+				}})
+		}
 	}
 
 	utils.StatusOKResponse(response, c)
@@ -59,20 +69,30 @@ func LoginAPI(c *gin.Context) {
 		Msg:  "登陆成功",
 	}
 
-	data := serializers.User{}
+	data := serializers.Login{}
 	c.BindJSON(&data)
-	userName := data.UserName
-	password := data.Password
 
-	user := models.User{}
-	result := utils.MysqlDB.Preload("UserInformation").Where("user_name = ? AND password = ?", userName, password).First(&user)
+	// 输入合法性检验
+	validate := serializers.GetValidate()
+	err := validate.Struct(data)
 
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+	if err != nil {
 		response.Code = 201
-		response.Msg = "请正确输入用户名或密码"
+		response.Msg = "参数不合法"
 	} else {
-		token, _ := middlewares.GenerateToken(userName)
-		response.Data.(map[string]interface{})["token"] = token
+
+		// 用户存在检验
+		user := models.User{}
+		err := utils.MysqlDB.Preload("QueryUserInformation").Where("username = ? OR email = ? OR mobile_phone = ?", data.Username, data.Username, data.Username).Where("password = ?", data.Password).First(&user).Error
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.Code = 202
+			response.Msg = "请正确输入用户名或密码"
+		} else {
+			token, _ := middlewares.GenerateToken(user.Username)
+			response.Data.(map[string]interface{})["token"] = token
+			response.Data.(map[string]interface{})["user_information"] = user.UserInformation
+		}
 	}
 
 	utils.StatusOKResponse(response, c)
@@ -88,15 +108,21 @@ func QueryUserInformationAPI(c *gin.Context) {
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
 	user := models.User{}
-	utils.MysqlDB.Preload("UserInformation").Where("user_name = ?", claims.Username).First(&user)
+	utils.MysqlDB.Preload("QueryUserInformation").Where("username = ?", claims.Username).First(&user)
 
-	response.Data.(map[string]interface{})["user_information"] = user.UserInformation
+	response.Data.(map[string]interface{})["user_information"] = serializers.QueryUserInformation{
+		Username:        user.Username,
+		Name:            user.UserInformation.Name,
+		Country:         user.UserInformation.Country,
+		CertificateType: resource.CertificateType[user.UserInformation.CertificateType],
+		Certificate:     user.UserInformation.Certificate,
+		CheckStatus:     resource.CheckStatus[user.UserInformation.CheckStatus],
+		MobilePhone:     user.MobilePhone,
+		Email:           user.Email,
+		PassengerType:   resource.PassengerType[user.UserInformation.PassengerType],
+	}
 
 	utils.StatusOKResponse(response, c)
-}
-
-func UpdatePasswordAPI(c *gin.Context)  {
-
 }
 
 func QueryRegularPassengersAPI(c *gin.Context) {
@@ -109,14 +135,28 @@ func QueryRegularPassengersAPI(c *gin.Context) {
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
 	user := models.User{}
-	utils.MysqlDB.Preload("UserInformation").Where("user_name = ?", claims.Username).First(&user)
+	utils.MysqlDB.Preload("QueryUserInformation").Where("user_name = ?", claims.Username).First(&user)
 
-	response.Data.(map[string]interface{})["passengers"] = user.Passengers
+	var passengers []serializers.QueryRegularPassenger
+
+	for _, passenger := range user.Passengers {
+		passengers = append(passengers, serializers.QueryRegularPassenger{
+			CertificateType: resource.CertificateType[passenger.CertificateType],
+			Name:            passenger.Name,
+			Certificate:     passenger.Certificate,
+			PassengerType:   resource.PassengerType[passenger.PassengerType],
+			CheckStatus:     resource.PassengerType[passenger.CheckStatus],
+			CreateDate:      passenger.CreatedAt.Format("2006-01-02"),
+			MobilePhone:     passenger.MobilePhone,
+		})
+	}
+
+	response.Data.(map[string]interface{})["passengers"] = passengers
 
 	utils.StatusOKResponse(response, c)
 }
 
-func AddRegularPassengersAPI(c *gin.Context) {
+func AddRegularPassengerAPI(c *gin.Context) {
 	response := utils.Response{
 		Code: 200,
 		Data: make(map[string]interface{}),
@@ -125,30 +165,37 @@ func AddRegularPassengersAPI(c *gin.Context) {
 
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
-	data := serializers.Passenger{}
+	data := serializers.AddRegularPassenger{}
 	c.BindJSON(&data)
 
-	const format = "2006-01-02"
-	birthday, _ := time.Parse(format, data.Birthday)
-	certificateDeadline, _ := time.Parse(format, data.CertificateDeadline)
+	sex, birthday := utils.ParseIdentityCard(data.Certificate)
 
 	user := models.User{}
-	utils.MysqlDB.Where("user_name = ?", claims.Username).First(&user)
+	utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
 	utils.MysqlDB.Model(&user).Association("Passengers").Append(&models.Passenger{
-		Name:                data.Name,
-		CertificateType:     data.CertificateType,
-		Sex:                 data.Sex,
-		Birthday:            birthday,
-		Country:             data.Country,
-		CertificateDeadline: certificateDeadline,
-		Certificate:         data.Certificate,
-		PassengerType:       data.PassengerType,
-		MobilePhone:         data.MobilePhone,
+		Name:        data.Name,
+		Sex:         sex,
+		Birthday:    birthday,
+		Certificate: data.Certificate,
+		MobilePhone: data.MobilePhone,
 	})
 
 	utils.StatusOKResponse(response, c)
 }
 
-func UpdateRegularPassengersAPI(c *gin.Context)  {
-	
+
+// TODO: Complete UpdateRegularPassengerAPI.
+func UpdateRegularPassengerAPI(c *gin.Context) {
+
+}
+
+// TODO: Complete DeleteRegularPassengerAPI.
+func DeleteRegularPassengerAPI(c *gin.Context) {
+
+}
+
+
+// TODO: Complete UpdatePasswordAPI.
+func UpdatePasswordAPI(c *gin.Context) {
+
 }

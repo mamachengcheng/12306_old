@@ -14,11 +14,12 @@ func InitRouter(router *gin.Engine) {
 	user.Use(middlewares.JWTMiddleware())
 	{
 		user.GET("/query_user_information", controllers.QueryUserInformationAPI)
-		user.POST("/update_password", controllers.UpdatePasswordAPI)
+	//	user.POST("/update_password", controllers.UpdatePasswordAPI)
 
+		user.POST("/add_regular_passengers", controllers.AddRegularPassengerAPI)
 		user.GET("/query_regular_passengers", controllers.QueryRegularPassengersAPI)
-		user.POST("/add_regular_passengers", controllers.AddRegularPassengersAPI)
-		user.POST("/update_regular_passengers", controllers.UpdateRegularPassengersAPI)
+	//	user.POST("/update_regular_passenger", controllers.UpdateRegularPassengerAPI)
+	//	user.POST("/delete_regular_passenger", controllers.DeleteRegularPassengerAPI)
 	}
 
 	// Train part router.
