@@ -184,18 +184,18 @@ func AddRegularPassengerAPI(c *gin.Context) {
 }
 
 
-// TODO: Complete UpdateRegularPassengerAPI.
 func UpdateRegularPassengerAPI(c *gin.Context) {
+	// TODO: Complete UpdateRegularPassengerAPI.
 
 }
 
-// TODO: Complete DeleteRegularPassengerAPI.
 func DeleteRegularPassengerAPI(c *gin.Context) {
+	// TODO: Complete DeleteRegularPassengerAPI.
 
 }
 
 
-// TODO: Complete UpdatePasswordAPI.
 func UpdatePasswordAPI(c *gin.Context) {
+	// TODO: Complete UpdatePasswordAPI.
 
 }
