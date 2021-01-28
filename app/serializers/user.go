@@ -41,3 +41,11 @@ type AddRegularPassenger struct {
 	Name        string `validate:"required,VerifyNameFormat" json:"name"`
 	Certificate string `validate:"required,len=18,VerifyCertificateFormat" json:"certificate"`
 }
+
+type DeleteRegularPassenger struct {
+	ID uint `validate:"required" json:"id"`
+}
+
+type UpdatePassword struct {
+	Password string `validate:"required,VerifyPasswordFormat" json:"password""`
+}

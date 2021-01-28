@@ -83,7 +83,7 @@ func LoginAPI(c *gin.Context) {
 
 		// 用户存在检验
 		user := models.User{}
-		err := utils.MysqlDB.Preload("QueryUserInformation").Where("username = ? OR email = ? OR mobile_phone = ?", data.Username, data.Username, data.Username).Where("password = ?", data.Password).First(&user).Error
+		err := utils.MysqlDB.Where("username = ? OR email = ? OR mobile_phone = ?", data.Username, data.Username, data.Username).Where("password = ?", data.Password).First(&user).Error
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.Code = 202
@@ -91,7 +91,6 @@ func LoginAPI(c *gin.Context) {
 		} else {
 			token, _ := middlewares.GenerateToken(user.Username)
 			response.Data.(map[string]interface{})["token"] = token
-			response.Data.(map[string]interface{})["user_information"] = user.UserInformation
 		}
 	}
 
@@ -108,7 +107,7 @@ func QueryUserInformationAPI(c *gin.Context) {
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
 	user := models.User{}
-	utils.MysqlDB.Preload("QueryUserInformation").Where("username = ?", claims.Username).First(&user)
+	utils.MysqlDB.Preload("UserInformation").Where("username = ?", claims.Username).First(&user)
 
 	response.Data.(map[string]interface{})["user_information"] = serializers.QueryUserInformation{
 		Username:        user.Username,
@@ -135,7 +134,7 @@ func QueryRegularPassengersAPI(c *gin.Context) {
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
 	user := models.User{}
-	utils.MysqlDB.Preload("QueryUserInformation").Where("user_name = ?", claims.Username).First(&user)
+	utils.MysqlDB.Preload("Passengers").Where("username = ?", claims.Username).First(&user)
 
 	var passengers []serializers.QueryRegularPassenger
 
@@ -183,19 +182,60 @@ func AddRegularPassengerAPI(c *gin.Context) {
 	utils.StatusOKResponse(response, c)
 }
 
-
 func UpdateRegularPassengerAPI(c *gin.Context) {
 	// TODO: Complete UpdateRegularPassengerAPI.
 
 }
 
 func DeleteRegularPassengerAPI(c *gin.Context) {
-	// TODO: Complete DeleteRegularPassengerAPI.
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "删除成功",
+	}
 
+	data := serializers.DeleteRegularPassenger{}
+	c.BindJSON(&data)
+
+	// 输入合法性检验
+	if validate := serializers.GetValidate(); validate.Struct(data) != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		claims := c.MustGet("claims").(*middlewares.Claims)
+
+		user := models.User{}
+		utils.MysqlDB.Preload("Passengers", "id = ?", data.ID).Where("username = ?", claims.Username).First(&user)
+
+		if len(user.Passengers) == 0 {
+			response.Code = 202
+			response.Msg = "乘客不存在"
+		} else {
+			utils.MysqlDB.Unscoped().Where("ID = ?", data.ID).Delete(&models.Passenger{})
+		}
+	}
+
+	utils.StatusOKResponse(response, c)
 }
 
-
 func UpdatePasswordAPI(c *gin.Context) {
-	// TODO: Complete UpdatePasswordAPI.
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "修改成功",
+	}
 
+	data := serializers.UpdatePassword{}
+	c.BindJSON(&data)
+
+	// 输入合法性检验
+	if validate := serializers.GetValidate(); validate.Struct(data) != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		claims := c.MustGet("claims").(*middlewares.Claims)
+		utils.MysqlDB.Model(&models.User{}).Where("username= ?", claims.Username).Update("password", data.Password)
+	}
+
+	utils.StatusOKResponse(response, c)
 }
