@@ -35,9 +35,9 @@ def get_stopovers(from_station: str, to_station: str, train_date: str, train_num
     :param train_num: Train number.
     :return: The stopovers of station.txt.
     """
-    pass
-    # TODO: Completion code
-    stopovers = list()
+    url = conf['url']['get_stopovers'].format(
+        **{'from_station': from_station, 'to_station': to_station, 'train_date': train_date, 'train_num':train_num})
+    stopovers = requests.get(url).json()['data']['stopOvers']
     return stopovers
 
 
@@ -50,7 +50,7 @@ def get_train_detail_info(from_station: str, to_station: str, train_date: str, t
     :param train_num: Train number.
     :return: The train detail information.
     """
-    pass
-    # TODO: Completion code
-    train_detail_info = dict()
+    url = conf['url']['get_train_detail_info'].format(
+        **{'from_station': from_station, 'to_station': to_station, 'train_date': train_date,'train_num':train_num})
+    train_detail_info = requests.get(url).json()['data']
     return train_detail_info
