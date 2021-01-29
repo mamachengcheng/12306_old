@@ -6,7 +6,6 @@ import (
 	"github.com/mamachengcheng/12306/app/resource"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gopkg.in/ini.v1"
-	"log"
 	"time"
 )
 
