@@ -13,6 +13,8 @@ func GetValidate() *validator.Validate {
 	Validate.RegisterValidation("VerifyCertificateFormat", VerifyCertificateFormat)
 	Validate.RegisterValidation("VerifyNameFormat", VerifyNameFormat)
 
+	Validate.RegisterValidation("VerifyInitialNameFormat", VerifyInitialNameFormat)
+	Validate.RegisterValidation("VerifyCityNameFormat", VerifyCityNameFormat)
 	return Validate
 }
 
@@ -56,4 +58,18 @@ func VerifyNameFormat(password validator.FieldLevel) bool {
 
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(password.Field().String())
+}
+
+func VerifyInitialNameFormat(initialName validator.FieldLevel) bool {
+	regular := "[a-zA-Z]"
+
+	reg := regexp.MustCompile(regular)
+	return reg.MatchString(initialName.Field().String())
+}
+
+func VerifyCityNameFormat(cityName validator.FieldLevel) bool {
+	regular := "^[\u4e00-\u9fa5]{2,12}$"
+
+	reg := regexp.MustCompile(regular)
+	return reg.MatchString(cityName.Field().String())
 }
