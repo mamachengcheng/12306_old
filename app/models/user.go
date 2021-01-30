@@ -14,8 +14,8 @@ type User struct {
 
 	Password string `gorm:"not null" json:"password"`
 
-	UserInformation Passenger   `gorm:"foreignKey:UserRefer;not null;unique" json:"user_information"`
-	Passengers      []Passenger `gorm:"foreignKey:UserRefer" json:"regular_passengers"`
+	UserInformation Passenger   `gorm:"foreignKey:UserRefer;not null;unique" json:"user_information"`  // Hsa One Passenger
+	Passengers      []Passenger `gorm:"foreignKey:UserRefer" json:"regular_passengers"`  // Has Many Passenger
 }
 
 type Passenger struct {

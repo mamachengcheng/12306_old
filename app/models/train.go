@@ -31,8 +31,8 @@ type Schedule struct {
 	StartStationRefer uint // Belongs to Station
 	EndStationRefer   uint // Belongs to Station
 
-	Seats []Seat `gorm:"foreignKey:ScheduleRefer;not null" json:"seats"`  // Has Many Seat
-	Stops []Stop `gorm:"foreignKey:ScheduleRefer;not null" json:"stops"`  // Has Many Stop
+	Seats []Seat `gorm:"foreignKey:ScheduleRefer" json:"seats"`  // Has Many Seat
+	Stops []Stop `gorm:"foreignKey:ScheduleRefer" json:"stops"`  // Has Many Stop
 }
 
 type Seat struct {
