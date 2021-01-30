@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 )
 
-
 type (
 	Doc struct {
 		Resid       string `json:"resid"`
@@ -23,17 +22,15 @@ type (
 		Tag         string `json:"tag"`
 	}
 	Result struct {
-		Dc 	[]Doc `json:"doc"`
+		Dc []Doc `json:"doc"`
 	}
 )
-
 
 func InitModel() {
 	utils.MysqlDB.AutoMigrate(
 		&User{},
 		&Passenger{},
 		&Order{},
-		&Train{},
 		&Schedule{},
 		&Stop{},
 		&Seat{},
@@ -41,7 +38,7 @@ func InitModel() {
 	//InitStation(utils.MysqlDB)
 }
 
-func InitStation(MysqlDB *gorm.DB)  {
+func InitStation(MysqlDB *gorm.DB) {
 
 	var Data Result
 
@@ -52,15 +49,11 @@ func InitStation(MysqlDB *gorm.DB)  {
 		MysqlDB.Create(&Station{
 			StationName: val.Name,
 			InitialName: val.InitialName,
-			Pinyin: val.Pinyin,
-			CityNo: val.Cityid,
-			CityName: val.Cityname,
-			ShowName: val.Showname,
-			NameType: val.NameType,
+			Pinyin:      val.Pinyin,
+			CityNo:      val.Cityid,
+			CityName:    val.Cityname,
+			ShowName:    val.Showname,
+			NameType:    val.NameType,
 		})
 	}
 }
-
-
-
-
