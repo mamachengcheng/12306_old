@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 type (
 	Doc struct {
 		Resid       string `json:"resid"`
@@ -24,43 +23,43 @@ type (
 		Tag         string `json:"tag"`
 	}
 	Result struct {
-		Dc 	[]Doc `json:"doc"`
+		Dc []Doc `json:"doc"`
 	}
 )
 
 type (
 	TrainList struct {
-		Stopovers	[]Stopover	`json:"stopovers"`
-		Train		Train		`json:"train"`
+		Stopovers []Stopover `json:"stopovers"`
+		Train     Train      `json:"train"`
 	}
 	Stopover struct {
 		StationNo   string `json:"stationNo"`
 		StationName string `json:"stationName"`
-		Runtime 	string `json:"runtime"`
+		Runtime     string `json:"runtime"`
 		OverTime    string `json:"overTime"`
 		Kilometer   string `json:"kilometer"`
 		EndTime     string `json:"endTime"`
 		StartTime   string `json:"startTime"`
 	}
 	Train struct {
-		TicketStatusList 	[]TicketStatus	`json:"TicketStatus"`
-		TrainNo				string			`json:"TrainNo"`
-		Sort				string			`json:"Sort"`
-		FmTime				string			`json:"FmTime"`
-		ToDateTime			string			`json:"ToDateTime"`
-		FmCity				string			`json:"FmCity"`
-		ToCity				string			`json:"ToCity"`
-		UsedTimeps			uint			`json:"UsedTimeps"`
+		TicketStatusList []TicketStatus `json:"TicketStatus"`
+		TrainNo          string         `json:"TrainNo"`
+		Sort             string         `json:"Sort"`
+		FmTime           string         `json:"FmTime"`
+		ToDateTime       string         `json:"ToDateTime"`
+		FmCity           string         `json:"FmCity"`
+		ToCity           string         `json:"ToCity"`
+		UsedTimeps       uint           `json:"UsedTimeps"`
 	}
 	TicketStatus struct {
-		Cn			string		`json:"Cn"`
-		Price		float32		`json:"Price"`
+		Cn    string  `json:"Cn"`
+		Price float32 `json:"Price"`
 	}
 	Result1 struct {
-		Date       	string 		`json:"date"`
-		To         	string 		`json:"to"`
-		From       	string 		`json:"from"`
-		TrainLists 	[]TrainList `json:"train_list"`
+		Date       string      `json:"date"`
+		To         string      `json:"to"`
+		From       string      `json:"from"`
+		TrainLists []TrainList `json:"train_list"`
 	}
 )
 
@@ -75,9 +74,10 @@ func InitModel() {
 	)
 	//InitStation(utils.MysqlDB)
 	InitSchedule(utils.MysqlDB)
+	//InitSchedule(utils.MysqlDB)
 }
 
-func InitStation(MysqlDB *gorm.DB)  {
+func InitStation(MysqlDB *gorm.DB) {
 
 	var Data Result
 
@@ -88,16 +88,50 @@ func InitStation(MysqlDB *gorm.DB)  {
 		MysqlDB.Create(&Station{
 			StationName: val.Name,
 			InitialName: val.InitialName,
-			Pinyin: val.Pinyin,
-			CityNo: val.Cityid,
-			CityName: val.Cityname,
-			ShowName: val.Showname,
-			NameType: val.NameType,
+			Pinyin:      val.Pinyin,
+			CityNo:      val.Cityid,
+			CityName:    val.Cityname,
+			ShowName:    val.Showname,
+			NameType:    val.NameType,
 		})
 	}
 }
 
-func InitSchedule(MysqlDB *gorm.DB)  {
+// 北京南 天津南 南京南 上海
+func InitSchedule(MysqlDB *gorm.DB) {
+	var startStation, endStation Station
+	var seats []Seat
+	var stops []Stop
+	utils.MysqlDB.Where("station_name = ?", "北京南").First(&startStation)
+	utils.MysqlDB.Where("station_name = ?", "上海").First(&endStation)
+
+	stopStations := []string{"北京南", "天津南", "南京南", "上海"}
+	for idx, stopStation := range stopStations {
+		var stop Station
+		utils.MysqlDB.Where("station_name = ?", stopStation).First(&stop)
+		stops = append(stops, Stop{
+			No:           uint(idx),
+			StartStation: stop,
+			StartTime:    time.Now(),
+			EndTime:      time.Now(),
+			Duration:     1,
+		})
+	}
+
+	MysqlDB.Create(&Schedule{
+		TrainNo:      "G5",
+		TrainType:    1,
+		TicketStatus: "1",
+		StartTime:    time.Now(),
+		EndTime:      time.Now(),
+		Duration:     1,
+		StartStation: startStation,
+		EndStation:   endStation,
+		Seats:        seats,
+		Stops:        stops,
+	})
+}
+func InitSchedule(MysqlDB *gorm.DB) {
 
 	var Data Result1
 
@@ -107,8 +141,8 @@ func InitSchedule(MysqlDB *gorm.DB)  {
 
 	date := Data.Date
 	for _, val := range Data.TrainLists {
-		StartTime,_ := time.Parse("2006-01-02 15:04", date+" "+val.Train.FmTime)
-		EndTime,_ 	:= time.Parse("2006-1-2 15:04:00", val.Train.ToDateTime)
+		StartTime, _ := time.Parse("2006-01-02 15:04", date+" "+val.Train.FmTime)
+		EndTime, _ := time.Parse("2006-1-2 15:04:00", val.Train.ToDateTime)
 
 		MysqlDB.Create(&Schedule{
 			Model:             gorm.Model{},
@@ -127,5 +161,3 @@ func InitSchedule(MysqlDB *gorm.DB)  {
 		})
 	}
 }
-
-
