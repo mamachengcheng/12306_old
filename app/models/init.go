@@ -5,6 +5,7 @@ import (
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
 	"io/ioutil"
+	"strconv"
 	"time"
 )
 
@@ -33,7 +34,7 @@ type (
 		Train     Train      `json:"train"`
 	}
 	Stopover struct {
-		StationNo   string `json:"stationNo"`
+		StationNo   uint 	`json:"stationNo"`
 		StationName string `json:"stationName"`
 		Runtime     string `json:"runtime"`
 		OverTime    string `json:"overTime"`
@@ -73,8 +74,8 @@ func InitModel() {
 		&Seat{},
 	)
 	//InitStation(utils.MysqlDB)
-	InitSchedule(utils.MysqlDB)
 	//InitSchedule(utils.MysqlDB)
+	//InitStop(utils.MysqlDB)
 }
 
 func InitStation(MysqlDB *gorm.DB) {
@@ -98,7 +99,7 @@ func InitStation(MysqlDB *gorm.DB) {
 }
 
 // 北京南 天津南 南京南 上海
-func InitSchedule(MysqlDB *gorm.DB) {
+func InitScheduleTest(MysqlDB *gorm.DB) {
 	var startStation, endStation Station
 	var seats []Seat
 	var stops []Stop
@@ -120,7 +121,7 @@ func InitSchedule(MysqlDB *gorm.DB) {
 
 	MysqlDB.Create(&Schedule{
 		TrainNo:      "G5",
-		TrainType:    1,
+		TrainType:    "",
 		TicketStatus: "1",
 		StartTime:    time.Now(),
 		EndTime:      time.Now(),
@@ -131,7 +132,11 @@ func InitSchedule(MysqlDB *gorm.DB) {
 		Stops:        stops,
 	})
 }
+
 func InitSchedule(MysqlDB *gorm.DB) {
+
+	var seats []Seat
+	var stops []Stop
 
 	var Data Result1
 
@@ -141,23 +146,80 @@ func InitSchedule(MysqlDB *gorm.DB) {
 
 	date := Data.Date
 	for _, val := range Data.TrainLists {
-		StartTime, _ := time.Parse("2006-01-02 15:04", date+" "+val.Train.FmTime)
-		EndTime, _ := time.Parse("2006-1-2 15:04:00", val.Train.ToDateTime)
+		var StartTime time.Time
+		if val.Train.FmTime[0] == '-' {
+			StartTime, _ = time.ParseInLocation("2006-01-02 15:04", "2099-12-31 23:59", time.Local)
+		} else {
+			StartTime, _ = time.ParseInLocation("2006-01-02 15:04", date+" "+val.Train.FmTime, time.Local)
+		}
+		EndTime, _ := time.ParseInLocation("2006-1-2 15:04:00", val.Train.ToDateTime, time.Local)
+
+		var startStation, endStation Station
+		utils.MysqlDB.Where("station_name = ?", val.Train.FmCity).First(&startStation)
+		utils.MysqlDB.Where("station_name = ?", val.Train.ToCity).First(&endStation)
+
+		res1B, _ := json.Marshal(val.Train.TicketStatusList)
+		//fmt.Println(string(res1B))
 
 		MysqlDB.Create(&Schedule{
 			Model:             gorm.Model{},
-			TrainNo:           val.Train.TrainNo,
-			TrainType:         val.Train.Sort,
-			TicketStatus:      "",
-			StartTime:         StartTime,
-			EndTime:           EndTime,
-			Duration:          val.Train.UsedTimeps,
-			StartStation:      val.Train.FmCity,
-			EndStation:        val.Train.ToCity,
-			StartStationRefer: 1,
-			EndStationRefer:   2,
-			Seats:             nil,
-			Stops:             nil,
+			TrainNo:           	val.Train.TrainNo,
+			TrainType:         	val.Train.Sort,
+			TicketStatus:      	string(res1B),
+			StartTime:         	StartTime,
+			EndTime:           	EndTime,
+			Duration:          	val.Train.UsedTimeps,
+			StartStation: 	   	startStation,
+			EndStation:   	   	endStation,
+			Seats:        		seats,
+			Stops:       		stops,
 		})
+	}
+}
+
+func InitStop(MysqlDB *gorm.DB) {
+	var Data Result1
+
+	bytes, _ := ioutil.ReadFile("script/spider/data/北京+上海+2021-01-31.json")
+
+	_ = json.Unmarshal(bytes, &Data)
+
+	date := Data.Date
+	for _, val := range Data.TrainLists {
+		for _, val1 := range val.Stopovers {
+			var station Station
+			utils.MysqlDB.Where("station_name = ?", val1.StationName).First(&station)
+			var StartTime1 time.Time
+			var EndTime1 time.Time
+			if val1.StartTime[0] == '-' {
+				StartTime1, _ = time.ParseInLocation("2006-01-02 15:04", "2099-12-31 23:59", time.Local)
+			} else {
+				StartTime1, _ = time.ParseInLocation("2006-01-02 15:04", date+" "+val1.StartTime, time.Local)
+			}
+			if val1.EndTime[0] == '-' {
+				EndTime1, _ = time.ParseInLocation("2006-01-02 15:04", "2099-12-31 23:59", time.Local)
+			} else {
+				EndTime1, _ = time.ParseInLocation("2006-01-02 15:04", date+" "+val1.EndTime, time.Local)
+			}
+			var duration uint
+			if val1.OverTime[0] == '-' {
+				duration = 0
+			} else{
+				duration1, _ := strconv.ParseUint(string([]rune(val1.OverTime)[:len([]rune(val1.OverTime))-2]), 10, 32)
+				duration = uint(duration1)
+			}
+			var schedule Schedule
+			utils.MysqlDB.Where("train_no = ?", val.Train.TrainNo).First(&schedule)
+			stop := Stop{
+				No:            val1.StationNo,
+				StartStation:  station,
+				StartTime:     StartTime1,
+				EndTime:       EndTime1,
+				Duration:      duration,
+				ScheduleRefer: schedule.ID,
+			}
+			utils.MysqlDB.Create(&stop)
+			_ = utils.MysqlDB.Model(schedule).Association("stops").Append(stop)
+		}
 	}
 }
