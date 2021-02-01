@@ -35,6 +35,9 @@ func InitRouter(router *gin.Engine) {
 	order := router.Group("/api/v1/user")
 	order.Use(middlewares.JWTMiddleware())
 	{
-
+		order.POST("book_ticket", controllers.BookTicketAPI)
+		order.POST("refund_ticket", controllers.RefundTicketAPI)
+		order.POST("pay_order", controllers.PayOrderAPI)
+		order.POST("refund_money", controllers.RefundMoneyAPI)
 	}
 }

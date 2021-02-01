@@ -37,7 +37,7 @@ type Schedule struct {
 
 type Seat struct {
 	gorm.Model
-	SeatID     uint   `gorm:"not null;unique"`
+
 	SeatNo     string `gorm:"not null" json:"seat_no"`
 	CarNumber  uint   `gorm:"not null" json:"car_number"`
 	SeatType   uint   `gorm:"not null" json:"seat_type"`
