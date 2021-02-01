@@ -6,10 +6,14 @@ import (
 
 type Order struct {
 	gorm.Model
-	TradeNo        string `gorm:"not null;unique" json:"trade_no"`
-	ScheduleRefer  uint
-	Schedule       Schedule `gorm:"foreignKey:ScheduleRefer;not null;unique" json:"schedule"`
-	OrderStatus    uint     `gorm:"not null;unique" json:"order_status"`
-	Seat           Seat     `gorm:"foreignKey:SeatID;not null;unique" json:"seat"`
+
+	OrderStatus uint `gorm:"not null" json:"order_status"`
+
+	Seat          Seat     `gorm:"foreignKey:SeatRefer;not null" json:"seat"`
+	Schedule      Schedule `gorm:"foreignKey:ScheduleRefer;not null" json:"schedule"`
+	SeatRefer     uint     // Belongs to Seat
+	ScheduleRefer uint     // Belongs to Schedule
+
 	PassengerRefer uint
+	ScheduleRefer  uint
 }
