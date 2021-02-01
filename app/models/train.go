@@ -47,18 +47,19 @@ type Stop struct {
 	gorm.Model
 	No uint `gorm:"not null" json:"no"`
 
-	StartStationRefer uint    // Belongs to Station
-	StartStation      Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
-
 	StartTime time.Time `gorm:"not null" json:"start_time"`
 	EndTime   time.Time `gorm:"not null" json:"end_time"`
 	Duration  uint      `gorm:"not null" json:"duration"`
+
+	StartStation      Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
+	StartStationRefer uint    // Belongs to Station
 
 	TrainRefer uint
 }
 
 type Train struct {
+	gorm.Model
 	Schedules []Schedule `gorm:"foreignKey:TrainRefer" json:"schedules"` // Has Many Schedules
-	Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many seats
-	Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`  // Has Many Stops
+	//Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`  // Has Many Stops
+	//Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many Seats
 }
