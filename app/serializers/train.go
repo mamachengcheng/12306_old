@@ -18,3 +18,7 @@ type GetStation struct {
 type SearchStation struct {
 	CityName	string `json:"city_name" validate:"required,VerifyCityNameFormat"`
 }
+
+type GetScheduleDetail struct {
+	TrainNo      string    `json:"train_no"`
+}
