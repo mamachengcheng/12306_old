@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/serializers"
 	"github.com/mamachengcheng/12306/app/utils"
+	"time"
 )
 
 func GetStationListAPI(c *gin.Context)  {
@@ -98,7 +100,43 @@ func GetStopAPI(c *gin.Context)  {
 
 func GetScheduleDetailAPI(c *gin.Context)  {
 	// TODO: 获取车次详情接口 @徐晓刚
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg: "获取车次详情接口成功",
+	}
+	data := serializers.GetScheduleDetail{}
+	c.BindJSON(&data)
+	validate := serializers.GetValidate()
 
+	err := validate.Struct(data)
+	if err != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		startTime, _ := time.ParseInLocation("2006-01-02", data.StartTime, time.Local)
+		fmt.Println(startTime)
+		var schedules []models.Schedule
+		err = utils.MysqlDB.Where("train_no = ? and start_time >= ? and start_time < ?", data.TrainNo, startTime, startTime.Add(time.Hour * 24)).Find(&schedules).Error
+		if err != nil {
+			response.Code = 201
+			response.Msg = "输入车次不存在"
+		}
+		var result []serializers.ScheduleList
+		for _, val := range schedules {
+			result = append(result, serializers.ScheduleList{
+				TrainNo:      val.TrainNo,
+				TrainType:    val.TrainType,
+				TicketStatus: val.TicketStatus,
+				StartTime:    val.StartTime,
+				EndTime:      val.EndTime,
+				Duration:     val.Duration,
+			})
+		}
+		response.Data = result
+	}
+
+	utils.StatusOKResponse(response, c)
 }
 
 
