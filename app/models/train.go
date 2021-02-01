@@ -25,13 +25,12 @@ type Schedule struct {
 	EndTime      time.Time `gorm:"not null" json:"end_time"`
 	Duration     uint      `gorm:"not null" json:"duration"`
 
-	StartStation Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
-	EndStation   Station `gorm:"foreignKey:EndStationRefer;not null" json:"end_station"`
+	StartStation      Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
+	EndStation        Station `gorm:"foreignKey:EndStationRefer;not null" json:"end_station"`
+	StartStationRefer uint    // Belongs to Station
+	EndStationRefer   uint    // Belongs to Station
 
-	StartStationRefer uint   // Belongs to Station
-	EndStationRefer   uint   // Belongs to Station
-	Seats             []Seat `gorm:"foreignKey:ScheduleRefer" json:"seats"` // Has Many Seat
-	Stops             []Stop `gorm:"foreignKey:ScheduleRefer" json:"stops"` // Has Many Stop
+	TrainRefer uint
 }
 
 type Seat struct {
@@ -41,7 +40,7 @@ type Seat struct {
 	SeatType   uint   `gorm:"not null" json:"seat_type"`
 	SeatStatus uint64 `gorm:"not null" json:"seat_status"`
 
-	ScheduleRefer uint
+	TrainRefer uint
 }
 
 type Stop struct {
@@ -55,5 +54,11 @@ type Stop struct {
 	EndTime   time.Time `gorm:"not null" json:"end_time"`
 	Duration  uint      `gorm:"not null" json:"duration"`
 
-	ScheduleRefer uint
+	TrainRefer uint
+}
+
+type Train struct {
+	Schedules []Schedule `gorm:"foreignKey:TrainRefer" json:"schedules"` // Has Many Schedules
+	Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many seats
+	Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`  // Has Many Stops
 }
