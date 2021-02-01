@@ -18,6 +18,8 @@ func GetValidate() *validator.Validate {
 
 	Validate.RegisterValidation("VerifyTrainNoFormat", VerifyTrainNoFormat)
 	Validate.RegisterValidation("VerifyTimeFormat", VerifyTimeFormat)
+	Validate.RegisterValidation("VerifyStationNameFormat", VerifyStationNameFormat)
+	Validate.RegisterValidation("VerifyTrainNoFormat", VerifyTrainNoFormat)
 	return Validate
 }
 
@@ -77,7 +79,7 @@ func VerifyCityNameFormat(cityName validator.FieldLevel) bool {
 	return reg.MatchString(cityName.Field().String())
 }
 
-func VerifyTrainNoFormat(trainNo validator.FieldLevel) bool {
+func VerifyTrainNoFormat1(trainNo validator.FieldLevel) bool {
 	regular := "^(T|K|D|G|C|L|Z|A|Y|[1-7]){1}\\d{1,4}$"
 
 	reg := regexp.MustCompile(regular)
@@ -89,4 +91,18 @@ func VerifyTimeFormat(date validator.FieldLevel) bool {
 
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(date.Field().String())
+}
+
+func VerifyStationNameFormat(stationName validator.FieldLevel) bool {
+	regular := "^[\u4e00-\u9fa5]{2,12}$"
+
+	reg := regexp.MustCompile(regular)
+	return reg.MatchString(stationName.Field().String())
+}
+
+func VerifyTrainNoFormat(trainNo validator.FieldLevel) bool {
+	regular := "^[DGKTZ0-9]{2,6}$"
+
+	reg := regexp.MustCompile(regular)
+	return reg.MatchString(trainNo.Field().String())
 }
