@@ -147,35 +147,35 @@ func GetScheduleListAPI(c *gin.Context) {
 
 func GetStopAPI(c *gin.Context) {
 	// TODO: 获取车站列表接口 @韦俊朗
-	response := utils.Response{
-		Code: 200,
-		Data: make(map[string]interface{}),
-		Msg:  "获取列车经停站列表成功",
-	}
-	data := serializers.GetStop{}
-	_ = c.BindJSON(&data)
-	validate := serializers.GetValidate()
-	err := validate.Struct(data)
-	if err != nil {
-		response.Code = 201
-		response.Msg = "参数不合法"
-	} else {
-		var stops []serializers.StopList
-		schedule := models.Schedule{}
-		utils.MysqlDB.Preload("Stops").Preload("Stops.StartStation").Where("train_no = ?", data.TrainNo).First(&schedule)
-		for _, stop := range schedule.Stops {
-			stops = append(stops, serializers.StopList{
-				No:          stop.No,
-				StationName: stop.StartStation.StationName,
-				StartTime:   stop.StartTime,
-				Duration:    stop.Duration,
-			})
-
-		}
-		response.Data = stops
-	}
-
-	utils.StatusOKResponse(response, c)
+	//response := utils.Response{
+	//	Code: 200,
+	//	Data: make(map[string]interface{}),
+	//	Msg:  "获取列车经停站列表成功",
+	//}
+	//data := serializers.GetStop{}
+	//_ = c.BindJSON(&data)
+	//validate := serializers.GetValidate()
+	//err := validate.Struct(data)
+	//if err != nil {
+	//	response.Code = 201
+	//	response.Msg = "参数不合法"
+	//} else {
+	//	var stops []serializers.StopList
+	//	schedule := models.Schedule{}
+	//	utils.MysqlDB.Preload("Stops").Preload("Stops.StartStation").Where("train_no = ?", data.TrainNo).First(&schedule)
+	//	for _, stop := range schedule.Stops {
+	//		stops = append(stops, serializers.StopList{
+	//			No:          stop.No,
+	//			StationName: stop.StartStation.StationName,
+	//			StartTime:   stop.StartTime,
+	//			Duration:    stop.Duration,
+	//		})
+	//
+	//	}
+	//	response.Data = stops
+	//}
+	//
+	//utils.StatusOKResponse(response, c)
 }
 
 func GetScheduleDetailAPI(c *gin.Context) {
@@ -204,6 +204,10 @@ func GetScheduleDetailAPI(c *gin.Context) {
 		}
 		var result []serializers.ScheduleList
 		for _, val := range schedules {
+			var startStation models.Station
+			err = utils.MysqlDB.Where("id = ?", val.StartStationRefer).Find(&startStation).Error
+			var endStation models.Station
+			err = utils.MysqlDB.Where("id = ?", val.EndStationRefer).Find(&endStation).Error
 			result = append(result, serializers.ScheduleList{
 				TrainNo:      val.TrainNo,
 				TrainType:    val.TrainType,
@@ -211,6 +215,24 @@ func GetScheduleDetailAPI(c *gin.Context) {
 				StartTime:    val.StartTime,
 				EndTime:      val.EndTime,
 				Duration:     val.Duration,
+				StartStation: serializers.StationList{
+					StationName: startStation.StationName,
+					InitialName: startStation.InitialName,
+					Pinyin:      startStation.Pinyin,
+					CityNo:      startStation.CityNo,
+					CityName:    startStation.CityName,
+					ShowName:    startStation.ShowName,
+					NameType:    startStation.NameType,
+				},
+				EndStation: serializers.StationList{
+					StationName: endStation.StationName,
+					InitialName: endStation.InitialName,
+					Pinyin:      endStation.Pinyin,
+					CityNo:      endStation.CityNo,
+					CityName:    endStation.CityName,
+					ShowName:    endStation.ShowName,
+					NameType:    endStation.NameType,
+				},
 			})
 		}
 		response.Data = result
