@@ -1,23 +1,26 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/serializers"
 	"github.com/mamachengcheng/12306/app/utils"
 	"time"
 )
 
-func GetStationListAPI(c *gin.Context) {
+func GetStationListAPI(c *gin.Context)  {
 	// TODO: 获取车站列表接口 @韦俊朗
 	response := utils.Response{
 		Code: 200,
-		Msg:  "获取车站列表成功",
+		Msg: "获取车站列表成功",
 		Data: make(map[string]interface{}),
 	}
+
 	data := serializers.GetStation{}
-	c.BindJSON(&data)
+	_ = c.BindJSON(&data)
 
 	validate := serializers.GetValidate()
 	err := validate.Struct(data)
@@ -26,19 +29,27 @@ func GetStationListAPI(c *gin.Context) {
 		response.Code = 201
 		response.Msg = "参数不合法"
 	} else {
-		var stations []models.Station
-		utils.MysqlDB.Where("initial_name = ?", data.InitialName).Find(&stations)
 		var result []serializers.StationList
-		for _, val := range stations {
-			result = append(result, serializers.StationList{
-				StationName: val.StationName,
-				InitialName: val.InitialName,
-				Pinyin:      val.Pinyin,
-				CityNo:      val.CityNo,
-				CityName:    val.CityName,
-				ShowName:    val.CityName,
-				NameType:    val.NameType,
-			})
+		err1 := utils.RedisDB.Get(utils.RedisDBCtx,data.InitialName).Err()
+		if err1 == redis.Nil {
+			var stations []models.Station
+			utils.MysqlDB.Where("initial_name = ?", data.InitialName).Find(&stations)
+			for _, val := range stations {
+				result = append(result, serializers.StationList{
+					StationName: val.StationName,
+					InitialName: val.InitialName,
+					Pinyin:      val.Pinyin,
+					CityNo:      val.CityNo,
+					CityName:    val.CityName,
+					ShowName:    val.CityName,
+					NameType:    val.NameType,
+				})
+			}
+			res, _ := json.Marshal(result)
+			utils.RedisDB.Set(utils.RedisDBCtx, data.InitialName, res, 0)
+		} else {
+			val := utils.RedisDB.Get(utils.RedisDBCtx, data.InitialName).Val()
+			_ = json.Unmarshal([]byte(val), &result)
 		}
 		response.Data = result
 	}
@@ -145,37 +156,39 @@ func GetScheduleListAPI(c *gin.Context) {
 	utils.StatusOKResponse(response, c)
 }
 
-func GetStopAPI(c *gin.Context) {
+func GetStopAPI(c *gin.Context)  {
 	// TODO: 获取车站列表接口 @韦俊朗
-	//response := utils.Response{
-	//	Code: 200,
-	//	Data: make(map[string]interface{}),
-	//	Msg:  "获取列车经停站列表成功",
-	//}
-	//data := serializers.GetStop{}
-	//_ = c.BindJSON(&data)
-	//validate := serializers.GetValidate()
-	//err := validate.Struct(data)
-	//if err != nil {
-	//	response.Code = 201
-	//	response.Msg = "参数不合法"
-	//} else {
-	//	var stops []serializers.StopList
-	//	schedule := models.Schedule{}
-	//	utils.MysqlDB.Preload("Stops").Preload("Stops.StartStation").Where("train_no = ?", data.TrainNo).First(&schedule)
-	//	for _, stop := range schedule.Stops {
-	//		stops = append(stops, serializers.StopList{
-	//			No:          stop.No,
-	//			StationName: stop.StartStation.StationName,
-	//			StartTime:   stop.StartTime,
-	//			Duration:    stop.Duration,
-	//		})
-	//
-	//	}
-	//	response.Data = stops
-	//}
-	//
-	//utils.StatusOKResponse(response, c)
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg: "获取列车经停站列表成功",
+	}
+	data := serializers.GetStop{}
+	_ = c.BindJSON(&data)
+	validate := serializers.GetValidate()
+	err := validate.Struct(data)
+	if err != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		var stops []serializers.StopList
+		var schedule models.Schedule
+		var train models.Train
+		utils.MysqlDB.Where("train_no = ?", data.TrainNo).First(&schedule)
+		utils.MysqlDB.Preload("Stops").Where("id = ?",schedule.TrainRefer).Find(&train)
+		for _, stop := range train.Stops {
+			stops = append(stops, serializers.StopList{
+				No:				stop.No,
+				StationName: 	stop.StartStation.StationName,
+				StartTime: 		stop.StartTime,
+				Duration:  		stop.Duration,
+			})
+
+		}
+		response.Data = stops
+	}
+
+	utils.StatusOKResponse(response, c)
 }
 
 func GetScheduleDetailAPI(c *gin.Context) {
