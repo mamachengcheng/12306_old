@@ -18,7 +18,7 @@ func main() {
 	router := gin.Default()
 
 	routers.InitRouter(router)
-	models.InitModel()
+		models.InitModel()
 
 	address := server.Key("http").String() + ":" + server.Key("port").String()
 	router.Run(address)
