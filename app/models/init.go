@@ -31,7 +31,7 @@ type (
 type (
 	TrainList struct {
 		Stopovers []Stopover `json:"stopovers"`
-		Train     Train      `json:"train"`
+		Train     Traintrain `json:"train"`
 	}
 	Stopover struct {
 		StationNo   uint 	`json:"stationNo"`
@@ -42,7 +42,7 @@ type (
 		EndTime     string `json:"endTime"`
 		StartTime   string `json:"startTime"`
 	}
-	Train struct {
+	Traintrain struct {
 		TicketStatusList []TicketStatus `json:"TicketStatus"`
 		TrainNo          string         `json:"TrainNo"`
 		Sort             string         `json:"Sort"`

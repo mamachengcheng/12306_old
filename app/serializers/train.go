@@ -12,14 +12,14 @@ type StationList struct {
 	NameType    string `json:"name_type"`
 }
 
-type ScheduleList struct {
-	TrainNo			string 		`json:"train_no"`
-	TrainType		string		`json:"train_type"`
-	TicketStatus	string		`json:"ticket_status"`
-	StartTime		time.Time	`json:"start_time"`
-	EndTime			time.Time	`json:"end_time"`
-	Duration		uint		`json:"duration"`
-}
+//type ScheduleList struct {
+//	TrainNo			string 		`json:"train_no"`
+//	TrainType		string		`json:"train_type"`
+//	TicketStatus	string		`json:"ticket_status"`
+//	StartTime		time.Time	`json:"start_time"`
+//	EndTime			time.Time	`json:"end_time"`
+//	Duration		uint		`json:"duration"`
+//}
 
 type ScheduleList struct {
 	TrainNo      string    `json:"train_no"`
