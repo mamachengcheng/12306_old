@@ -60,6 +60,6 @@ type Stop struct {
 type Train struct {
 	gorm.Model
 	Schedules []Schedule `gorm:"foreignKey:TrainRefer" json:"schedules"` // Has Many Schedules
-	//Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`  // Has Many Stops
-	//Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many Seats
+	Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`  // Has Many Stops
+	Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many Seats
 }
