@@ -105,12 +105,12 @@ func BookTicketAPI(c *gin.Context) {
 		for i := 0; i < l; i++ {
 			scheduleCode = scheduleCode << 1
 		}
-
+		var temp []models.Ticket
 		for _, seat := range train.Seats {
 			if seat.SeatStatus&scheduleCode == 1 {
 
 				utils.MysqlDB.Model(&user).Association("Orders").Append(&models.Order{
-					Tickets:,
+					Tickets: temp,
 				})
 				break
 			}
