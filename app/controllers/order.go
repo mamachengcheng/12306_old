@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/mamachengcheng/12306/app/middlewares"
 	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/serializers"
 	"github.com/mamachengcheng/12306/app/utils"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -17,7 +19,7 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
-func ReadyPayAPI(c *gin.Context)  {
+func ReadyPayAPI(c *gin.Context) {
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
 	response := utils.Response{
@@ -26,9 +28,16 @@ func ReadyPayAPI(c *gin.Context)  {
 		Msg:  "待支付",
 	}
 
-	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+	var user models.User
+	var order models.Order
 
-	if err == nil {
+	utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
+	err := utils.MysqlDB.Where("user_refer = ? AND order_Status = ?", user.ID, 0).First(&order).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.Msg = "无待支付订单"
+	} else {
+
+		ws, _ := upGrader.Upgrade(c.Writer, c.Request, nil)
 		defer ws.Close()
 		for err = utils.RedisDB.Get(utils.RedisDBCtx, claims.Username).Err(); err != nil; {
 			response.Data.(map[string]interface{})["remaining_time"] = utils.RedisDB.TTL(utils.RedisDBCtx, claims.Username)
@@ -36,19 +45,14 @@ func ReadyPayAPI(c *gin.Context)  {
 			err = utils.RedisDB.Get(utils.RedisDBCtx, claims.Username).Err()
 		}
 
-		var user models.User{}
-		var order models.Order{}
-
-		utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
-		utils.MysqlDB.Where("user_refer = ? AND order_Status = ?", user.ID, 0).First(&order)
 		utils.MysqlDB.Select("Tickets").Delete(&order)
 
 		response.Data = make(map[string]interface{})
 		response.Data.(map[string]interface{})["tickets"] = order.Tickets
 		response.Msg = "取消订单"
-
-		utils.StatusOKResponse(response, c)
 	}
+
+	utils.StatusOKResponse(response, c)
 }
 
 func BookTicketAPI(c *gin.Context) {
@@ -94,7 +98,7 @@ func BookTicketAPI(c *gin.Context) {
 		}
 
 		var scheduleCode uint64 = 1
-		for i := 0; i < r - l + 1; i++ {
+		for i := 0; i < r-l+1; i++ {
 			scheduleCode = scheduleCode<<1 + 1
 		}
 
@@ -103,11 +107,10 @@ func BookTicketAPI(c *gin.Context) {
 		}
 
 		for _, seat := range train.Seats {
-			if seat.SeatStatus & scheduleCode == 1 {
+			if seat.SeatStatus&scheduleCode == 1 {
 
-				utils.MysqlDB.Model(&passenger).Association("Orders").Append(&models.Order{
-					Seat:     seat,
-					Schedule: schedule,
+				utils.MysqlDB.Model(&user).Association("Orders").Append(&models.Order{
+					Tickets:,
 				})
 				break
 			}
@@ -129,7 +132,7 @@ func BookTicketAPI(c *gin.Context) {
 	}
 }
 
-func RefundTicketAPI(c *gin.Context) {
+func CancelOrderAPI(c *gin.Context) {
 
 }
 
@@ -137,6 +140,6 @@ func PayOrderAPI(c *gin.Context) {
 
 }
 
-func RefundMoneyAPI(c *gin.Context) {
+func RefundTicketAPI(c *gin.Context) {
 
 }
