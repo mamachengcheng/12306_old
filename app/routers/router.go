@@ -37,7 +37,7 @@ func InitRouter(router *gin.Engine) {
 	{
 		order.GET("refund_money", controllers.ReadyPayAPI)
 
-		order.POST("book_ticket", controllers.BookTicketAPI)
+		order.POST("book_tickets", controllers.BookTicketsAPI)
 		order.POST("cancel_order", controllers.CancelOrderAPI)
 		order.POST("pay_order", controllers.PayOrderAPI)
 		order.POST("refund_ticket", controllers.RefundTicketAPI)

@@ -18,7 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TicketClient interface {
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryReply, error)
-	Pay(ctx context.Context, in *PayRequest, opts ...grpc.CallOption) (*PayReply, error)
 	Book(ctx context.Context, in *BookRequest, opts ...grpc.CallOption) (*BookReply, error)
 	Refund(ctx context.Context, in *RefundRequest, opts ...grpc.CallOption) (*RefundReply, error)
 }
@@ -34,15 +33,6 @@ func NewTicketClient(cc grpc.ClientConnInterface) TicketClient {
 func (c *ticketClient) Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryReply, error) {
 	out := new(QueryReply)
 	err := c.cc.Invoke(ctx, "/service.Ticket/Query", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ticketClient) Pay(ctx context.Context, in *PayRequest, opts ...grpc.CallOption) (*PayReply, error) {
-	out := new(PayReply)
-	err := c.cc.Invoke(ctx, "/service.Ticket/Pay", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +62,6 @@ func (c *ticketClient) Refund(ctx context.Context, in *RefundRequest, opts ...gr
 // for forward compatibility
 type TicketServer interface {
 	Query(context.Context, *QueryRequest) (*QueryReply, error)
-	Pay(context.Context, *PayRequest) (*PayReply, error)
 	Book(context.Context, *BookRequest) (*BookReply, error)
 	Refund(context.Context, *RefundRequest) (*RefundReply, error)
 	mustEmbedUnimplementedTicketServer()
@@ -84,9 +73,6 @@ type UnimplementedTicketServer struct {
 
 func (UnimplementedTicketServer) Query(context.Context, *QueryRequest) (*QueryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
-}
-func (UnimplementedTicketServer) Pay(context.Context, *PayRequest) (*PayReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Pay not implemented")
 }
 func (UnimplementedTicketServer) Book(context.Context, *BookRequest) (*BookReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Book not implemented")
@@ -121,24 +107,6 @@ func _Ticket_Query_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TicketServer).Query(ctx, req.(*QueryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Ticket_Pay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PayRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TicketServer).Pay(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.Ticket/Pay",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TicketServer).Pay(ctx, req.(*PayRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -186,10 +154,6 @@ var _Ticket_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Query",
 			Handler:    _Ticket_Query_Handler,
-		},
-		{
-			MethodName: "Pay",
-			Handler:    _Ticket_Pay_Handler,
 		},
 		{
 			MethodName: "Book",

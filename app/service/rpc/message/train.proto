@@ -6,13 +6,12 @@ package service;
 
 service Ticket {
   rpc Query (QueryRequest) returns (QueryReply) {}
-  rpc Pay (PayRequest) returns (PayReply) {}
   rpc Book (BookRequest) returns (BookReply) {}
   rpc Refund (RefundRequest) returns (RefundReply) {}
 }
 
 message QueryRequest {
-  string ScheduleID = 1;
+  uint64 ScheduleID = 1;
 }
 
 message QueryReply {
@@ -20,29 +19,20 @@ message QueryReply {
   string Result = 2;
 }
 
-message PayRequest {
-  string OrderID = 1;
-}
-
-message PayReply {
-  uint32 Code = 1;
-}
-
 message BookRequest {
-  string ScheduleID = 1;
+  uint64 ScheduleID = 1;
   uint64 UserID = 2;
   uint32 SeatType = 3;
 }
 
 message BookReply {
-  uint32 code = 1;
+  int64 Code = 1;
 }
 
 message RefundRequest {
-  string OrderID = 1;
+  uint64 OrderID = 1;
 }
 
 message RefundReply {
-  uint32 code = 1;
+  int64 Code = 1;
 }
-

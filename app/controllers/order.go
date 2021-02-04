@@ -10,7 +10,8 @@ import (
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
 	"net/http"
-	"time"
+	"strconv"
+	"strings"
 )
 
 var upGrader = websocket.Upgrader{
@@ -55,81 +56,69 @@ func ReadyPayAPI(c *gin.Context) {
 	utils.StatusOKResponse(response, c)
 }
 
-func BookTicketAPI(c *gin.Context) {
+func BookTicketsAPI(c *gin.Context) {
 	response := utils.Response{
 		Code: 200,
 		Data: make(map[string]interface{}),
-		Msg:  "",
+		Msg:  "出票成功",
 	}
 
-	data := serializers.BookTicket{}
+	data := serializers.BookTickets{}
 	c.BindJSON(&data)
+
 	validate := serializers.GetValidate()
 	err := validate.Struct(data)
 
-	if err != nil {
+	if err != nil && len(data.Tickets) <= 5 && len(data.Tickets) > 0 {
 		response.Code = 201
 		response.Msg = "参数不合法"
-
-		utils.StatusOKResponse(response, c)
 	} else {
 		claims := c.MustGet("claims").(*middlewares.Claims)
 
 		user := models.User{}
 		schedule := models.Schedule{}
-		passenger := models.Passenger{}
 		train := models.Train{}
+		var seats []models.Seat
 
 		utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
 		utils.MysqlDB.Where("id = ?", data.ScheduleID).First(&schedule)
 		utils.MysqlDB.Where("id = ?", schedule.TrainRefer).First(&train)
-		utils.MysqlDB.Where("id = ?", data.PassengerID).First(&passenger)
 
-		// TODO: 车次表生成时添入 scheduleCode  TrainNo: scheduleCode_scheduleNo
-		var l, r int
-		for k, stop := range train.Stops {
-			if stop.TrainRefer == schedule.StartStationRefer {
-				l = k - 1
-			}
-			if stop.TrainRefer == schedule.EndStationRefer {
-				r = k - 1
+		utils.MysqlDB.Where("seat_type = ?", data.SeatType).Find(&seats)
+		scheduleCode, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[0], 10, 64)
+
+		var tickets []models.Ticket
+		var passenger models.Passenger
+
+		var ticketCount int64 = 0
+		for _, seat := range seats {
+			if ticketCount == int64(len(data.Tickets)) {
 				break
 			}
-		}
-
-		var scheduleCode uint64 = 1
-		for i := 0; i < r-l+1; i++ {
-			scheduleCode = scheduleCode<<1 + 1
-		}
-
-		for i := 0; i < l; i++ {
-			scheduleCode = scheduleCode << 1
-		}
-
-		for _, seat := range train.Seats {
-			if seat.SeatStatus&scheduleCode == 1 {
-
-				utils.MysqlDB.Model(&user).Association("Orders").Append(&models.Order{
-					Tickets:,
+			utils.MysqlDB.Where("id = ?", data.Tickets[ticketCount].PassengerID).First(&passenger)
+			if seat.SeatStatus&scheduleCode == 0 {
+				tickets = append(tickets, models.Ticket{
+					Seat:      seat,
+					Passenger: passenger,
 				})
-				break
 			}
+			ticketCount++
 		}
 
-		if err := utils.RedisDB.Get(utils.RedisDBCtx, claims.Username).Err(); err == nil {
-			utils.RedisDB.Set(utils.RedisDBCtx, claims.Username, true, time.Minute*30)
-		}
-
-		ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
-
-		if err == nil {
-			defer ws.Close()
-			for {
-				response.Data.(map[string]interface{})["remaining_time"] = utils.RedisDB.TTL(utils.RedisDBCtx, claims.Username)
-				_ = ws.WriteJSON(response)
+		if ticketCount == int64(len(data.Tickets)) {
+			for _, ticket := range tickets {
+				result := utils.MysqlDB.Model(&ticket.Seat).Where("updated_at", ticket.Seat.UpdatedAt).Update("seat_status", ticket.Seat.SeatStatus&scheduleCode)
+				ticketCount -= result.RowsAffected
 			}
+			if ticketCount != 0 {
+				// 出票失败
+			}
+		} else {
+			// 出票失败
 		}
 	}
+
+	utils.StatusOKResponse(response, c)
 }
 
 func CancelOrderAPI(c *gin.Context) {

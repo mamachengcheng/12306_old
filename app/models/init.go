@@ -62,6 +62,7 @@ func InitModel() {
 		&User{},
 		&Passenger{},
 		&Order{},
+		&Ticket{},
 		&Station{},
 		&Train{},
 		&Schedule{},

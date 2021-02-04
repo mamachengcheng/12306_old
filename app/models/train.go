@@ -20,7 +20,6 @@ type Schedule struct {
 	gorm.Model
 	TrainNo      string    `gorm:"not null" json:"train_no"`
 	TrainType    string    `gorm:"not null" json:"train_type"`
-	TicketStatus string    `gorm:"not null" json:"ticket_status"`
 	StartTime    time.Time `gorm:"not null" json:"start_time"`
 	EndTime      time.Time `gorm:"not null" json:"end_time"`
 	Duration     uint      `gorm:"not null" json:"duration"`
@@ -37,7 +36,7 @@ type Seat struct {
 	gorm.Model
 	SeatNo     string `gorm:"not null" json:"seat_no"`
 	CarNumber  uint   `gorm:"not null" json:"car_number"`
-	SeatType   uint   `gorm:"not null" json:"seat_type"`
+	SeatType   string `gorm:"not null" json:"seat_type"`
 	SeatStatus uint64 `gorm:"not null" json:"seat_status"`
 
 	TrainRefer uint
@@ -60,6 +59,6 @@ type Stop struct {
 type Train struct {
 	gorm.Model
 	Schedules []Schedule `gorm:"foreignKey:TrainRefer" json:"schedules"` // Has Many Schedules
-	Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`  // Has Many Stops
+	Stops     []Stop     `gorm:"foreignKey:TrainRefer" json:"stops"`     // Has Many Stops
 	Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many Seats
 }
