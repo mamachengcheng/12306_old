@@ -24,12 +24,10 @@ func InitRouter(router *gin.Engine) {
 
 	// Train part router.
 	train := router.Group("/api/v1/train")
-	train.POST("get_station_list", controllers.GetStationListAPI)
-	train.POST("search_station", controllers.SearchStationAPI)
-	train.POST("get_schedule_list", controllers.GetScheduleListAPI)
-	train.POST("get_stops", controllers.GetStopAPI)
-
-	train.POST("get_schedule_detail", controllers.GetScheduleDetailAPI)
+	train.GET("get_station_list", controllers.GetStationListAPI)
+	train.GET("search_station", controllers.SearchStationAPI)
+	train.GET("get_schedule_list", controllers.GetScheduleListAPI)
+	train.GET("get_stops", controllers.GetStopAPI)
 
 	// Order part router.
 	order := router.Group("/api/v1/user")
