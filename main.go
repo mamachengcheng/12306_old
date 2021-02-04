@@ -5,6 +5,7 @@ import (
 	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/resource"
 	"github.com/mamachengcheng/12306/app/routers"
+	"github.com/mamachengcheng/12306/app/service"
 	"gopkg.in/ini.v1"
 )
 
@@ -19,6 +20,7 @@ func main() {
 
 	routers.InitRouter(router)
 	models.InitModel()
+	service.Start()
 
 	address := server.Key("http").String() + ":" + server.Key("port").String()
 	router.Run(address)

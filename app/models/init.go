@@ -64,12 +64,16 @@ type (
 	}
 )
 
+
 func InitModel() {
 	utils.MysqlDB.AutoMigrate(
 		&User{},
 		&Passenger{},
 		&Train{},
 		&Order{},
+		&Ticket{},
+		&Station{},
+		&Train{},
 		&Schedule{},
 		&Stop{},
 		&Seat{},

@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option go_package = "github.com/mamachengcheng/12306/app/service";
+
+package service;
+
+service Ticket {
+  rpc Query (QueryRequest) returns (QueryReply) {}
+  rpc Book (BookRequest) returns (BookReply) {}
+  rpc Refund (RefundRequest) returns (RefundReply) {}
+}
+
+message QueryRequest {
+  uint64 ScheduleID = 1;
+}
+
+message QueryReply {
+  uint32 Code = 1;
+  string Result = 2;
+}
+
+message BookRequest {
+  uint64 ScheduleID = 1;
+  uint64 UserID = 2;
+  uint32 SeatType = 3;
+}
+
+message BookReply {
+  int64 Code = 1;
+}
+
+message RefundRequest {
+  uint64 OrderID = 1;
+}
+
+message RefundReply {
+  int64 Code = 1;
+}
