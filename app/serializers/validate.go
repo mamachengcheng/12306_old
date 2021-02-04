@@ -14,7 +14,6 @@ func GetValidate() *validator.Validate {
 	Validate.RegisterValidation("VerifyNameFormat", VerifyNameFormat)
 
 	Validate.RegisterValidation("VerifyInitialNameFormat", VerifyInitialNameFormat)
-	Validate.RegisterValidation("VerifyCityNameFormat", VerifyCityNameFormat)
 
 	Validate.RegisterValidation("VerifyTrainNoFormat", VerifyTrainNoFormat)
 	Validate.RegisterValidation("VerifyTimeFormat", VerifyTimeFormat)
@@ -70,20 +69,6 @@ func VerifyInitialNameFormat(initialName validator.FieldLevel) bool {
 
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(initialName.Field().String())
-}
-
-func VerifyCityNameFormat(cityName validator.FieldLevel) bool {
-	regular := "^[\u4e00-\u9fa5]{2,12}$"
-
-	reg := regexp.MustCompile(regular)
-	return reg.MatchString(cityName.Field().String())
-}
-
-func VerifyTrainNoFormat1(trainNo validator.FieldLevel) bool {
-	regular := "^(T|K|D|G|C|L|Z|A|Y|[1-7]){1}\\d{1,4}$"
-
-	reg := regexp.MustCompile(regular)
-	return reg.MatchString(trainNo.Field().String())
 }
 
 func VerifyTimeFormat(date validator.FieldLevel) bool {

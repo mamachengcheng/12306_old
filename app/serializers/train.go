@@ -3,6 +3,7 @@ package serializers
 import "time"
 
 type StationList struct {
+	StationID   uint   `json:"station_id"`
 	StationName string `json:"station_name"`
 	InitialName string `json:"initial_name"`
 	Pinyin      string `json:"pinyin"`
@@ -11,15 +12,6 @@ type StationList struct {
 	ShowName    string `json:"show_name"`
 	NameType    string `json:"name_type"`
 }
-
-//type ScheduleList struct {
-//	TrainNo			string 		`json:"train_no"`
-//	TrainType		string		`json:"train_type"`
-//	TicketStatus	string		`json:"ticket_status"`
-//	StartTime		time.Time	`json:"start_time"`
-//	EndTime			time.Time	`json:"end_time"`
-//	Duration		uint		`json:"duration"`
-//}
 
 type ScheduleList struct {
 	TrainNo      string    `json:"train_no"`
@@ -45,7 +37,7 @@ type GetStation struct {
 }
 
 type SearchStation struct {
-	CityName string `json:"city_name" validate:"required,VerifyCityNameFormat"`
+	Key string `json:"key" validate:"required"`
 }
 
 type GetScheduleDetail struct {
@@ -53,11 +45,12 @@ type GetScheduleDetail struct {
 	StartTime string `json:"start_time" validate:"required,VerifyTimeFormat"`
 }
 
-type GetSchedule struct {
-	StartStationName string `json:"start_station_name" validate:"required,VerifyStationNameFormat"`
-	EndStationName   string `json:"end_station_name" validate:"required,VerifyStationNameFormat"`
+type GetScheduleList struct {
+	StartDate      string `json:"start_date" validate:"required,VerifyTimeFormat"`
+	StartStationID uint   `json:"start_station_id" validate:"required"`
+	EndStationID   uint   `json:"end_station_id" validate:"required"`
 }
 
 type GetStop struct {
-	TrainNo string `json:"train_no" validate:"required,VerifyTrainNoFormat"`
+	ScheduleID uint `json:"schedule_id" validate:"required"`
 }
