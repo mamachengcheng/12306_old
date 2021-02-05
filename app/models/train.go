@@ -20,10 +20,11 @@ type Schedule struct {
 	gorm.Model
 	TrainNo      string    `gorm:"not null" json:"train_no"`
 	TrainType    string    `gorm:"not null" json:"train_type"`
-	TicketStatus string    `gorm:"not null" json:"ticket_status"`
 	StartTime    time.Time `gorm:"not null" json:"start_time"`
 	EndTime      time.Time `gorm:"not null" json:"end_time"`
 	Duration     uint      `gorm:"not null" json:"duration"`
+
+	TicketStatus string    `gorm:"not null" json:"ticket_status"`
 
 	StartStation      Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
 	EndStation        Station `gorm:"foreignKey:EndStationRefer;not null" json:"end_station"`
@@ -47,12 +48,13 @@ type Stop struct {
 	gorm.Model
 	No uint `gorm:"not null" json:"no"`
 
-	StartStationRefer uint    // Belongs to Station
-	StartStation      Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
-
 	StartTime time.Time `gorm:"not null" json:"start_time"`
 	EndTime   time.Time `gorm:"not null" json:"end_time"`
 	Duration  uint      `gorm:"not null" json:"duration"`
+
+
+	StartStation      Station `gorm:"foreignKey:StartStationRefer;not null" json:"start_station"`
+	StartStationRefer uint    // Belongs to Station
 
 	TrainRefer uint
 }

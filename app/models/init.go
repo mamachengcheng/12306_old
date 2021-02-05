@@ -66,20 +66,21 @@ type (
 
 func InitModel() {
 	utils.MysqlDB.AutoMigrate(
-		&Order{},
 		&User{},
 		&Passenger{},
 		&Train{},
-
+		&Order{},
+		&Ticket{},
+		&Station{},
+		&Train{},
 		&Schedule{},
 		&Stop{},
 		&Seat{},
-		&Ticket{},
 	)
 	//InitStation(utils.MysqlDB)
 	//InitSchedule(utils.MysqlDB)
 	//InitStop(utils.MysqlDB)
-	InitTrainAndScheduleAndStopAndSeat(utils.MysqlDB)
+	//InitTrainAndScheduleAndStopAndSeat(utils.MysqlDB)
 }
 
 func InitStation(MysqlDB *gorm.DB) {
@@ -281,32 +282,9 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 		res1B, _ := json.Marshal(val.Train.TicketStatusList)
 		//fmt.Println(string(res1B))
 
-		var stops []Stop
-		utils.MysqlDB.Where("train_refer = ?", train.ID).Find(&stops)
-
-		var l, r int
-		for k, stop := range stops {
-			if stop.StartStationRefer == startStation.ID {
-				l = k - 1
-			}
-			if stop.StartStationRefer == endStation.ID {
-				r = k - 1
-				break
-			}
-		}
-
-		var scheduleCode uint64 = 1
-		for i := 0; i < r-l+1; i++ {
-			scheduleCode = scheduleCode<<1 + 1
-		}
-
-		for i := 0; i < l; i++ {
-			scheduleCode = scheduleCode << 1
-		}
-
 		schedule := Schedule{
 			Model:        gorm.Model{},
-			TrainNo:      strconv.FormatUint(scheduleCode, 10) + "_" + val.Train.TrainNo,
+			TrainNo:      val.Train.TrainNo,
 			TrainType:    val.Train.Sort,
 			TicketStatus: string(res1B),
 			StartTime:    StartTime,
@@ -325,7 +303,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			for i := 1; i <= 2; i++ {
 				for _, val1 := range ticketTypeList {
 					for _, val2 := range pre {
-						for j := 1; j <= 2; j++ {
+						for j := 1; j <= 4; j++ {
 							seat := Seat{
 								Model:      gorm.Model{},
 								SeatNo:     strconv.Itoa(j) + val2,
@@ -344,7 +322,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			ticketTypeList := []string{"硬座"}
 			for i := 1; i <= 2; i++ {
 				for _, val1 := range ticketTypeList {
-					for j := 1; j <= 2; j++ {
+					for j := 1; j <= 4; j++ {
 						seat := Seat{
 							Model:      gorm.Model{},
 							SeatNo:     strconv.Itoa(j),

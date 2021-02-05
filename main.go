@@ -5,7 +5,6 @@ import (
 	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/routers"
 	"github.com/mamachengcheng/12306/app/static"
-	"gopkg.in/ini.v1"
 )
 
 func main() {
