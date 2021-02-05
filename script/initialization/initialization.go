@@ -1,12 +1,13 @@
-package models
+package main
 
 import (
 	"encoding/json"
+	"github.com/golang/mock/mockgen/model"
+	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"strconv"
-	"time"
 )
 
 type (
@@ -66,16 +67,16 @@ type (
 
 func InitModel() {
 	utils.MysqlDB.AutoMigrate(
-		&User{},
-		&Passenger{},
-		&Train{},
-		&Order{},
-		&Ticket{},
-		&Station{},
-		&Train{},
-		&Schedule{},
-		&Stop{},
-		&Seat{},
+		&models.User{},
+		&models.Passenger{},
+		&models.Order{},
+		&models.Train{},
+		&models.Ticket{},
+		&models.Station{},
+		&models.Train{},
+		&models.Schedule{},
+		&models.Stop{},
+		&models.Seat{},
 	)
 	//InitStation(utils.MysqlDB)
 	//InitSchedule(utils.MysqlDB)
@@ -101,38 +102,6 @@ func InitStation(MysqlDB *gorm.DB) {
 			NameType:    val.NameType,
 		})
 	}
-}
-
-// 北京南 天津南 南京南 上海
-func InitScheduleTest(MysqlDB *gorm.DB) {
-	var startStation, endStation Station
-	var stops []Stop
-	utils.MysqlDB.Where("station_name = ?", "北京南").First(&startStation)
-	utils.MysqlDB.Where("station_name = ?", "上海").First(&endStation)
-
-	stopStations := []string{"北京南", "天津南", "南京南", "上海"}
-	for idx, stopStation := range stopStations {
-		var stop Station
-		utils.MysqlDB.Where("station_name = ?", stopStation).First(&stop)
-		stops = append(stops, Stop{
-			No:           uint(idx),
-			StartStation: stop,
-			StartTime:    time.Now(),
-			EndTime:      time.Now(),
-			Duration:     1,
-		})
-	}
-
-	MysqlDB.Create(&Schedule{
-		TrainNo:      "G5",
-		TrainType:    "",
-		TicketStatus: "1",
-		StartTime:    time.Now(),
-		EndTime:      time.Now(),
-		Duration:     1,
-		StartStation: startStation,
-		EndStation:   endStation,
-	})
 }
 
 func InitSchedule(MysqlDB *gorm.DB) {
@@ -338,4 +307,8 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			}
 		}
 	}
+}
+
+func main() {
+
 }

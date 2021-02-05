@@ -2,18 +2,21 @@ package utils
 
 import "math"
 
+type name struct {
+
+}
+
 func Creat(value uint32) [][64]uint32 {
 	remain := make([][64]uint32, 8)
 	for i := 0; i < 8; i++ {
-		for j := 0; j < 64; j++{
+		for j := 0; j < 64; j++ {
 			remain[i][j] = value
 		}
 	}
 	return remain
 }
 
-
-func add(start, end, col int, matrix [][64]uint32) bool {
+func Add(start, end, col int, matrix [][64]uint32) bool {
 	for i := start; i <= end; i++ {
 		matrix[col][i] += 1
 	}
@@ -27,7 +30,7 @@ func add(start, end, col int, matrix [][64]uint32) bool {
 	return true
 }
 
-func sub(start, end, col int, matrix [][64]uint32) bool {
+func Sub(start, end, col int, matrix [][64]uint32) bool {
 	for i := start; i <= end; i++ {
 		if matrix[col][i] == 0 {
 			return false
@@ -41,7 +44,7 @@ func sub(start, end, col int, matrix [][64]uint32) bool {
 	return true
 }
 
-func search(start, end, col int, matrix [][64]uint32) uint32 {
+func Find(start, end, col int, matrix [][64]uint32) uint32 {
 	if matrix[col][63] > 20 {
 		// uint 无法返回-1
 		return math.MaxUint32

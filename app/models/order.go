@@ -7,11 +7,11 @@ import (
 type Order struct {
 	gorm.Model
 
-	OrderStatus uint `gorm:"default:0" json:"order_status"`
-	Tickets []Ticket `gorm:"foreignKey:OrderRefer" json:"tickets"` // Has Many Ticket
+	OrderStatus uint     `gorm:"default:0;not null" json:"order_status"`
+	Tickets     []Ticket `gorm:"foreignKey:OrderRefer" json:"tickets"` // Has Many Ticket
 
-	Schedule       Schedule  `gorm:"foreignKey:ScheduleRefer;not null" json:"schedule"`
-	ScheduleRefer  uint      // Belongs to Schedule
+	Schedule      Schedule `gorm:"foreignKey:ScheduleRefer;not null" json:"schedule"`
+	ScheduleRefer uint     // Belongs to Schedule
 
 	UserRefer uint64
 }
