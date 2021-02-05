@@ -5,6 +5,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"log"
 )
 
 // Define push consumer interface.
@@ -39,6 +40,7 @@ func (c *PushConsumer) Start() error {
 	}
 	if err == nil {
 		err = c.consumer.Start()
+		log.Printf("Start %v \n", c.Topic)
 	}
 	return err
 }
@@ -47,4 +49,3 @@ func (c *PushConsumer) Shutdown() error {
 	err := c.consumer.Shutdown()
 	return err
 }
-

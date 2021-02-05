@@ -16,6 +16,7 @@ func ParseIdentityCard(identityCard string) (bool, time.Time) {
 	if len(result) != 3 {
 
 	}
+
 	sex, _ := strconv.Atoi(result[2])
 
 	const format = "2006-01-02"

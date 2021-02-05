@@ -59,16 +59,21 @@ func (s *TicketServer) Book(ctx context.Context, in *pb.BookRequest) (*pb.BookRe
 
 func (s *TicketServer) Refund(ctx context.Context, in *pb.RefundRequest) (*pb.RefundReply, error) {
 	var order models.Order
-	utils.MysqlDB.Where("id = ?", in.OrderID).First(&order)
-	scheduleCode, _ := strconv.ParseUint(strings.Split(order.Schedule.TrainNo, "_")[0], 10, 64)
+	var code int64 = 0
 
-	var code int64 = 1
+	err := utils.MysqlDB.Where("id = ?", in.OrderID).First(&order).Error
 
-	for _, ticket := range order.Tickets {
-		result := utils.MysqlDB.Model(&ticket.Seat).Update("seat_status", ticket.Seat.SeatStatus&(^scheduleCode))
-		if result.Error != nil {
-			code = 0
+	if err == nil {
+		scheduleCode, _ := strconv.ParseUint(strings.Split(order.Schedule.TrainNo, "_")[0], 10, 64)
+
+		for _, ticket := range order.Tickets {
+			result := utils.MysqlDB.Model(&ticket.Seat).Update("seat_status", ticket.Seat.SeatStatus&(^scheduleCode))
+			if result.Error != nil {
+				code = 1
+			}
 		}
+	} else {
+		code = 2
 	}
 
 	return &pb.RefundReply{

@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mamachengcheng/12306/app/middlewares"
 	"github.com/mamachengcheng/12306/app/models"
-	"github.com/mamachengcheng/12306/app/resource"
 	"github.com/mamachengcheng/12306/app/serializers"
+	"github.com/mamachengcheng/12306/app/static"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
 )
@@ -113,12 +113,12 @@ func QueryUserInformationAPI(c *gin.Context) {
 		Username:        user.Username,
 		Name:            user.UserInformation.Name,
 		Country:         user.UserInformation.Country,
-		CertificateType: resource.CertificateType[user.UserInformation.CertificateType],
+		CertificateType: static.CertificateType[user.UserInformation.CertificateType],
 		Certificate:     user.UserInformation.Certificate,
-		CheckStatus:     resource.CheckStatus[user.UserInformation.CheckStatus],
+		CheckStatus:     static.CheckStatus[user.UserInformation.CheckStatus],
 		MobilePhone:     user.MobilePhone,
 		Email:           user.Email,
-		PassengerType:   resource.PassengerType[user.UserInformation.PassengerType],
+		PassengerType:   static.PassengerType[user.UserInformation.PassengerType],
 	}
 
 	utils.StatusOKResponse(response, c)
@@ -140,11 +140,11 @@ func QueryRegularPassengersAPI(c *gin.Context) {
 
 	for _, passenger := range user.Passengers {
 		passengers = append(passengers, serializers.QueryRegularPassenger{
-			CertificateType: resource.CertificateType[passenger.CertificateType],
+			CertificateType: static.CertificateType[passenger.CertificateType],
 			Name:            passenger.Name,
 			Certificate:     passenger.Certificate,
-			PassengerType:   resource.PassengerType[passenger.PassengerType],
-			CheckStatus:     resource.PassengerType[passenger.CheckStatus],
+			PassengerType:   static.PassengerType[passenger.PassengerType],
+			CheckStatus:     static.PassengerType[passenger.CheckStatus],
 			CreateDate:      passenger.CreatedAt.Format("2006-01-02"),
 			MobilePhone:     passenger.MobilePhone,
 		})

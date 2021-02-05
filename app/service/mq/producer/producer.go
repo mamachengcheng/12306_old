@@ -5,13 +5,13 @@ import (
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/producer"
-	"github.com/mamachengcheng/12306/app/resource"
+	"github.com/mamachengcheng/12306/app/static"
 	"gopkg.in/ini.v1"
 )
 
 func SendMsg(topic, msgBody string) (string, error) {
 
-	cfg, _ := ini.Load(resource.ConfFilePath)
+	cfg, _ := ini.Load(static.ConfFilePath)
 	rocketmqCfg := cfg.Section("rocketmq")
 	address := rocketmqCfg.Key("host").String() + ":" + rocketmqCfg.Key("port").String()
 

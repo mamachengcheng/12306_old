@@ -3,7 +3,7 @@ package utils
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"github.com/mamachengcheng/12306/app/resource"
+	"github.com/mamachengcheng/12306/app/static"
 	"gopkg.in/ini.v1"
 )
 
@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	cfg, _ := ini.Load(resource.ConfFilePath)
+	cfg, _ := ini.Load(static.ConfFilePath)
 
 	redisCfg := cfg.Section("redis")
 	address := redisCfg.Key("host").String() + ":" + redisCfg.Key("port").String()

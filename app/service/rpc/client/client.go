@@ -1,56 +1,31 @@
 package client
 
-type RPCClientInterface interface {
-	Query()
+import (
+	"context"
+	"google.golang.org/grpc"
+	"time"
+)
+
+type Executor interface {
+	exec(coon *grpc.ClientConn, ctx context.Context, request map[string]interface{}) (map[string]interface{}, error)
 }
 
-//var (
-//	cfg, _  = ini.Load(resource.ConfFilePath)
-//	rpcCfg  = cfg.Section("rpc")
-//	address = rpcCfg.Key("host").String() + ":" + rpcCfg.Key("port").String()
-//)
-//
-//func Query() uint32 {
-//
-//	if c, err := grpc.Dial(address, grpc.WithInsecure()); err == nil {
-//		ticketClient := pb.NewTicketClient(c)
-//		defer c
-//		ctx, _ := context.WithTimeout(context.Background(), time.Second*3)
-//		clientDeadline := time.Now().Add(3 * time.Second)
-//		ctx, cancel := context.WithDeadline(ctx, clientDeadline)
-//		defer cancel()
-//
-//		response, _ := ticketClient.Query(ctx, &pb.QueryRequest{ScheduleID: 1})
-//		return response.Code
-//	}
-//}
-//
-//func Book() int64 {
-//
-//	if c, err := grpc.Dial(address, grpc.WithInsecure()); err == nil {
-//		ticketClient := pb.NewTicketClient(c)
-//		defer c
-//		ctx, _ := context.WithTimeout(context.Background(), time.Second*3)
-//		clientDeadline := time.Now().Add(3 * time.Second)
-//		ctx, cancel := context.WithDeadline(ctx, clientDeadline)
-//		defer cancel()
-//
-//		response, _ := ticketClient.Book(ctx, &pb.BookRequest{ScheduleID: 1, UserID: 1, SeatType: 1})
-//		return response.Code
-//	}
-//}
-//
-//func Refund() int64 {
-//
-//	if c, err := grpc.Dial(address, grpc.WithInsecure()); err == nil {
-//		ticketClient := pb.NewTicketClient(c)
-//		defer c
-//		ctx, _ := context.WithTimeout(context.Background(), time.Second*3)
-//		clientDeadline := time.Now().Add(3 * time.Second)
-//		ctx, cancel := context.WithDeadline(ctx, clientDeadline)
-//		defer cancel()
-//
-//		response, _ := ticketClient.Refund(ctx, &pb.RefundRequest{OrderID: 1})
-//		return response.Code
-//	}
-//}
+type GRPCClient struct {
+	Address  string
+	Executor Executor
+}
+
+func (c *GRPCClient) Send(request map[string]interface{}) (map[string]interface{}, error) {
+
+	var err error
+	if coon, err := grpc.Dial(c.Address, grpc.WithInsecure(), grpc.WithBlock()); err == nil {
+		defer coon.Close()
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		reply, err := c.Executor.exec(coon, ctx, request)
+		return reply, err
+	}
+	return nil, err
+}

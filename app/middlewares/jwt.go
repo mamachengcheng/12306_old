@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/mamachengcheng/12306/app/resource"
+	"github.com/mamachengcheng/12306/app/static"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gopkg.in/ini.v1"
 	"time"
@@ -12,7 +12,7 @@ import (
 var jwtSecret = []byte(getSignalKey())
 
 func getSignalKey() string {
-	cfg, _ := ini.Load(resource.ConfFilePath)
+	cfg, _ := ini.Load(static.ConfFilePath)
 	return cfg.Section("server").Key("sign_key").String()
 }
 

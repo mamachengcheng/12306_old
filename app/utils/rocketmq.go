@@ -84,7 +84,7 @@ package utils
 //}
 //
 //func PushConsumerFactory(topic string) (rocketmq.PushConsumer, error) {
-//	cfg, _ = ini.Load(resource.ConfFilePath)
+//	cfg, _ = ini.Load(static.ConfFilePath)
 //	rpcCfg = cfg.Section("rpc")
 //	address = rpcCfg.Key("host").String() + ":" + rpcCfg.Key("port").String()
 //
@@ -98,7 +98,7 @@ package utils
 //}
 
 //func NewProducer() iProducer {
-//	cfg, _ := ini.Load(resource.ConfFilePath)
+//	cfg, _ := ini.Load(static.ConfFilePath)
 //
 //	rocketmqCfg := cfg.Section("rocketmq")
 //	address := rocketmqCfg.Key("host").String() + ":" + rocketmqCfg.Key("port").String()

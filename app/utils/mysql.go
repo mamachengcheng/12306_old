@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/mamachengcheng/12306/app/resource"
+	"github.com/mamachengcheng/12306/app/static"
 	"gopkg.in/ini.v1"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	cfg, _ := ini.Load(resource.ConfFilePath)
+	cfg, _ := ini.Load(static.ConfFilePath)
 
 	mysqlCfg := cfg.Section("mysql")
 	username := mysqlCfg.Key("username").String()

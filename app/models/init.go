@@ -64,7 +64,6 @@ type (
 	}
 )
 
-
 func InitModel() {
 	utils.MysqlDB.AutoMigrate(
 		&User{},

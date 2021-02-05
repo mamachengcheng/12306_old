@@ -1,5 +1,7 @@
 package consumer
 
+import "log"
+
 // Implement refund money push consumer interface.
 type RefundMoneyPushConsumer struct {
 	PushConsumer
@@ -9,6 +11,7 @@ func newRefundMoneyPushConsumer(groupName, topic, address string) PushConsumerIn
 
 	f := func(msg string) {
 		//	TODO: Connect grpc.
+		log.Printf("%v \n", msg)
 	}
 
 	return &RefundMoneyPushConsumer{
