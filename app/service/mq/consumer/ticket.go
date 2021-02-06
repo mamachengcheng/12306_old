@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	pb "github.com/mamachengcheng/12306/app/service/rpc/message"
+	"github.com/mamachengcheng/12306/app/static"
 	"google.golang.org/grpc"
 	"log"
 	"strconv"
@@ -16,10 +17,9 @@ type RefundTicketPushConsumer struct {
 
 func newRefundTicketPushConsumer(groupName, topic, address string) PushConsumerInterface {
 
-	f := func(msg string) error {
+	f := func(msg string) {
 
-		var err error
-		if conn, err := grpc.Dial("0.0.0.0:50501", grpc.WithInsecure(), grpc.WithBlock()); err == nil {
+		if conn, err := grpc.Dial(static.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock()); err == nil {
 			defer conn.Close()
 			c := pb.NewTicketClient(conn)
 
@@ -33,7 +33,6 @@ func newRefundTicketPushConsumer(groupName, topic, address string) PushConsumerI
 				}
 			}
 		}
-		return err
 	}
 
 	return &RefundTicketPushConsumer{

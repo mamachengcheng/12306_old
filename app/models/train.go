@@ -1,7 +1,12 @@
 package models
 
 import (
+	"encoding/json"
+	"github.com/go-redis/redis/v8"
+	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -65,4 +70,46 @@ type Train struct {
 	Seats     []Seat     `gorm:"foreignKey:TrainRefer" json:"seats"`     // Has Many Seats
 
 	TicketStatus string `gorm:"not null" json:"ticket_status"`
+}
+
+func (schedule *Schedule) AfterFind(tx *gorm.DB) (err error) {
+	var matrix [8][64]uint32
+	var rt utils.RemainingTicket
+
+	key := "remaining_ticket" + strconv.Itoa(int(schedule.ID))
+	val, err := utils.RedisDB.Get(utils.RedisDBCtx, key).Result()
+
+	// 第一次查找，redis中不存在则需要生成
+	if err == redis.Nil {
+		var train Train
+		utils.MysqlDB.Where("id = ?", schedule.TrainRefer).First(&train)
+		var priceStatus []map[string]int
+		if err:= json.Unmarshal([]byte(train.TicketStatus), &priceStatus); err != nil {
+			for _, v := range priceStatus {
+				rt.Creat(v["type"], uint32(v["num"]), &matrix)
+			}
+		}
+		res, _ := json.Marshal(matrix)
+		utils.RedisDB.Set(utils.RedisDBCtx, key, res, 0)
+	} else {
+		_ = json.Unmarshal([]byte(val), &matrix)
+	}
+
+	var priceStatus []map[string]int
+	startStation, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[0], 10, 64)
+	endStation, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[1], 10, 64)
+
+
+	if err:= json.Unmarshal([]byte(schedule.PriceStatus), &priceStatus); err != nil {
+		for _, v := range priceStatus {
+			_ := int(rt.Find(uint32(startStation), uint32(endStation), uint32(v["type"]), matrix))
+		}
+	}
+
+
+	//
+	//res, _ := json.Marshal(result)
+	//schedule.PriceStatus = res
+
+	return
 }

@@ -12,11 +12,12 @@ service Ticket {
 
 message QueryRequest {
   uint64 ScheduleID = 1;
+  uint32 StartStation = 2;
+  uint32 EndStation = 3;
 }
 
 message QueryReply {
-  uint32 Code = 1;
-  string Result = 2;
+  string Result = 1;
 }
 
 message BookRequest {
