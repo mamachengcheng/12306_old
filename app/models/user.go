@@ -14,8 +14,6 @@ type User struct {
 
 	Password string `gorm:"not null" json:"password"`
 
-	UserInformation Passenger `gorm:"foreignKey:MobilePhone;foreignkey:UserName" json:"user_information"` // Belong to Passenger
-
 	Passengers []Passenger `gorm:"foreignKey:UserRefer" json:"regular_passengers"` // Has Many Passenger
 	Orders     []Order     `gorm:"foreignKey:UserRefer" json:"orders"`             // Has Many Order
 }

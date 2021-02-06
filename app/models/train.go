@@ -101,6 +101,7 @@ func (schedule *Schedule) AfterFind(tx *gorm.DB) (err error) {
 		if err := json.Unmarshal([]byte(train.TicketStatus), &ticketStatus); err == nil {
 			for _, v := range ticketStatus {
 				rt.Creat(v.Type, v.Num, &matrix)
+
 			}
 
 			res, _ := json.Marshal(matrix)
