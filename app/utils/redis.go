@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	RedisDB *redis.Client
+	RedisDB    *redis.Client
 	RedisDBCtx context.Context
 )
 
@@ -20,8 +20,8 @@ func init() {
 	db, _ := redisCfg.Key("db").Int()
 
 	RedisDB = redis.NewClient(&redis.Options{
-		Addr:     address,
-		DB:       db,
+		Addr: address,
+		DB:   db,
 	})
 	RedisDBCtx = context.Background()
 }

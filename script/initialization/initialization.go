@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/golang/mock/mockgen/model"
 	"github.com/mamachengcheng/12306/app/models"
+	"github.com/mamachengcheng/12306/app/static"
 	"github.com/mamachengcheng/12306/app/utils"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"strconv"
+	"time"
 )
 
 type (
@@ -66,7 +67,7 @@ type (
 )
 
 func InitModel() {
-	utils.MysqlDB.AutoMigrate(
+	_ = utils.MysqlDB.AutoMigrate(
 		&models.User{},
 		&models.Passenger{},
 		&models.Order{},
@@ -92,7 +93,7 @@ func InitStation(MysqlDB *gorm.DB) {
 
 	_ = json.Unmarshal(bytes, &Data)
 	for _, val := range Data.Dc {
-		MysqlDB.Create(&Station{
+		MysqlDB.Create(&models.Station{
 			StationName: val.Name,
 			InitialName: val.InitialName,
 			Pinyin:      val.Pinyin,
@@ -122,18 +123,18 @@ func InitSchedule(MysqlDB *gorm.DB) {
 		}
 		EndTime, _ := time.ParseInLocation("2006-1-2 15:04:00", val.Train.ToDateTime, time.Local)
 
-		var startStation, endStation Station
+		var startStation, endStation models.Station
 		utils.MysqlDB.Where("station_name = ?", val.Train.FmCity).First(&startStation)
 		utils.MysqlDB.Where("station_name = ?", val.Train.ToCity).First(&endStation)
 
 		res1B, _ := json.Marshal(val.Train.TicketStatusList)
 		//fmt.Println(string(res1B))
 
-		MysqlDB.Create(&Schedule{
+		MysqlDB.Create(&models.Schedule{
 			Model:        gorm.Model{},
 			TrainNo:      val.Train.TrainNo,
 			TrainType:    val.Train.Sort,
-			TicketStatus: string(res1B),
+			PriceStatus:  string(res1B),
 			StartTime:    StartTime,
 			EndTime:      EndTime,
 			Duration:     val.Train.UsedTimeps,
@@ -153,7 +154,7 @@ func InitStop(MysqlDB *gorm.DB) {
 	date := Data.Date
 	for _, val := range Data.TrainLists {
 		for _, val1 := range val.Stopovers {
-			var station Station
+			var station models.Station
 			utils.MysqlDB.Where("station_name = ?", val1.StationName).First(&station)
 			var StartTime1 time.Time
 			var EndTime1 time.Time
@@ -174,9 +175,9 @@ func InitStop(MysqlDB *gorm.DB) {
 				duration1, _ := strconv.ParseUint(string([]rune(val1.OverTime)[:len([]rune(val1.OverTime))-2]), 10, 32)
 				duration = uint(duration1)
 			}
-			var schedule Schedule
+			var schedule models.Schedule
 			utils.MysqlDB.Where("train_no = ?", val.Train.TrainNo).First(&schedule)
-			stop := Stop{
+			stop := models.Stop{
 				No:           val1.StationNo,
 				StartStation: station,
 				StartTime:    StartTime1,
@@ -189,6 +190,19 @@ func InitStop(MysqlDB *gorm.DB) {
 	}
 }
 
+type (
+	TrainSeatNumStatus struct {
+		TicketType int      `json:"type"`
+		Num        uint     `json:"num"`
+		Status     [65]uint `json:"status"`
+	}
+
+	TrainSeatPrice struct {
+		TicketType int     `json:"type"`
+		Price      float32 `json:"price"`
+	}
+)
+
 func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 	var Data Result1
 
@@ -197,13 +211,33 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 	_ = json.Unmarshal(bytes, &Data)
 
 	date := Data.Date
+	var uint_65_100 [65]uint
+	for i := 0; i < 65; i++ {
+		uint_65_100[i] = 100
+	}
 	for _, val := range Data.TrainLists {
-		train := Train{
-			Model: gorm.Model{},
+		var a []TrainSeatNumStatus
+		for _, val2 := range val.Train.TicketStatusList {
+			for i, val3 := range static.SeatType {
+				if val2.Cn == val3 {
+					a = append(a, TrainSeatNumStatus{
+						TicketType: i,
+						Num:        100,
+						Status:     uint_65_100,
+					})
+					break
+				}
+			}
+		}
+		res1B, _ := json.Marshal(a)
+		train := models.Train{
+			Model:        gorm.Model{},
+			TicketStatus: string(res1B),
 		}
 		MysqlDB.Create(&train)
+
 		for _, val1 := range val.Stopovers {
-			var station Station
+			var station models.Station
 			utils.MysqlDB.Where("station_name = ?", val1.StationName).First(&station)
 			var StartTime1 time.Time
 			var EndTime1 time.Time
@@ -224,7 +258,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 				duration1, _ := strconv.ParseUint(string([]rune(val1.OverTime)[:len([]rune(val1.OverTime))-2]), 10, 32)
 				duration = uint(duration1)
 			}
-			stop := Stop{
+			stop := models.Stop{
 				No:           val1.StationNo,
 				StartStation: station,
 				StartTime:    StartTime1,
@@ -244,18 +278,29 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 		}
 		EndTime, _ := time.ParseInLocation("2006-1-2 15:04:00", val.Train.ToDateTime, time.Local)
 
-		var startStation, endStation Station
+		var startStation, endStation models.Station
 		utils.MysqlDB.Where("station_name = ?", val.Train.FmCity).First(&startStation)
 		utils.MysqlDB.Where("station_name = ?", val.Train.ToCity).First(&endStation)
 
-		res1B, _ := json.Marshal(val.Train.TicketStatusList)
-		//fmt.Println(string(res1B))
+		var b []TrainSeatPrice
+		for _, val2 := range val.Train.TicketStatusList {
+			for i, val3 := range static.SeatType {
+				if val2.Cn == val3 {
+					b = append(b, TrainSeatPrice{
+						TicketType: i,
+						Price:      val2.Price,
+					})
+					break
+				}
+			}
+		}
+		res2B, _ := json.Marshal(b)
 
-		schedule := Schedule{
+		schedule := models.Schedule{
 			Model:        gorm.Model{},
 			TrainNo:      val.Train.TrainNo,
 			TrainType:    val.Train.Sort,
-			TicketStatus: string(res1B),
+			PriceStatus:  string(res2B),
 			StartTime:    StartTime,
 			EndTime:      EndTime,
 			Duration:     val.Train.UsedTimeps,
@@ -273,7 +318,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 				for _, val1 := range ticketTypeList {
 					for _, val2 := range pre {
 						for j := 1; j <= 4; j++ {
-							seat := Seat{
+							seat := models.Seat{
 								Model:      gorm.Model{},
 								SeatNo:     strconv.Itoa(j) + val2,
 								CarNumber:  uint(i),
@@ -292,7 +337,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			for i := 1; i <= 2; i++ {
 				for _, val1 := range ticketTypeList {
 					for j := 1; j <= 4; j++ {
-						seat := Seat{
+						seat := models.Seat{
 							Model:      gorm.Model{},
 							SeatNo:     strconv.Itoa(j),
 							CarNumber:  uint(i),
@@ -310,5 +355,5 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 }
 
 func main() {
-
+	InitModel()
 }
