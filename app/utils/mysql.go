@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	MysqlDB *gorm.DB
+	MysqlDB    *gorm.DB
 	MysqlDBErr error
 )
 
@@ -21,6 +21,6 @@ func init() {
 	address := mysqlCfg.Key("host").String() + ":" + mysqlCfg.Key("port").String()
 	dbname := mysqlCfg.Key("dbname").String()
 
-	dsn := username + ":" + password + "@tcp("+ address + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := username + ":" + password + "@tcp(" + address + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
 	MysqlDB, MysqlDBErr = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 }

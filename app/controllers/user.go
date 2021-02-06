@@ -144,7 +144,7 @@ func QueryRegularPassengersAPI(c *gin.Context) {
 			Name:            passenger.Name,
 			Certificate:     passenger.Certificate,
 			PassengerType:   static.PassengerType[passenger.PassengerType],
-			CheckStatus:     static.PassengerType[passenger.CheckStatus],
+			CheckStatus:     static.CheckStatus[passenger.CheckStatus],
 			CreateDate:      passenger.CreatedAt.Format("2006-01-02"),
 			MobilePhone:     passenger.MobilePhone,
 		})
