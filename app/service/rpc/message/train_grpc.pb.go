@@ -17,7 +17,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TicketClient interface {
-	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryReply, error)
 	Book(ctx context.Context, in *BookRequest, opts ...grpc.CallOption) (*BookReply, error)
 	Refund(ctx context.Context, in *RefundRequest, opts ...grpc.CallOption) (*RefundReply, error)
 }
@@ -28,15 +27,6 @@ type ticketClient struct {
 
 func NewTicketClient(cc grpc.ClientConnInterface) TicketClient {
 	return &ticketClient{cc}
-}
-
-func (c *ticketClient) Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryReply, error) {
-	out := new(QueryReply)
-	err := c.cc.Invoke(ctx, "/service.Ticket/Query", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *ticketClient) Book(ctx context.Context, in *BookRequest, opts ...grpc.CallOption) (*BookReply, error) {
@@ -61,7 +51,6 @@ func (c *ticketClient) Refund(ctx context.Context, in *RefundRequest, opts ...gr
 // All implementations must embed UnimplementedTicketServer
 // for forward compatibility
 type TicketServer interface {
-	Query(context.Context, *QueryRequest) (*QueryReply, error)
 	Book(context.Context, *BookRequest) (*BookReply, error)
 	Refund(context.Context, *RefundRequest) (*RefundReply, error)
 	mustEmbedUnimplementedTicketServer()
@@ -71,9 +60,6 @@ type TicketServer interface {
 type UnimplementedTicketServer struct {
 }
 
-func (UnimplementedTicketServer) Query(context.Context, *QueryRequest) (*QueryReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
-}
 func (UnimplementedTicketServer) Book(context.Context, *BookRequest) (*BookReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Book not implemented")
 }
@@ -91,24 +77,6 @@ type UnsafeTicketServer interface {
 
 func RegisterTicketServer(s grpc.ServiceRegistrar, srv TicketServer) {
 	s.RegisterService(&_Ticket_serviceDesc, srv)
-}
-
-func _Ticket_Query_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TicketServer).Query(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.Ticket/Query",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TicketServer).Query(ctx, req.(*QueryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Ticket_Book_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -151,10 +119,6 @@ var _Ticket_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "service.Ticket",
 	HandlerType: (*TicketServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Query",
-			Handler:    _Ticket_Query_Handler,
-		},
 		{
 			MethodName: "Book",
 			Handler:    _Ticket_Book_Handler,

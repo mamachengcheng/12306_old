@@ -5,19 +5,8 @@ option go_package = "github.com/mamachengcheng/12306/app/service";
 package service;
 
 service Ticket {
-  rpc Query (QueryRequest) returns (QueryReply) {}
   rpc Book (BookRequest) returns (BookReply) {}
   rpc Refund (RefundRequest) returns (RefundReply) {}
-}
-
-message QueryRequest {
-  uint64 ScheduleID = 1;
-  uint32 StartStation = 2;
-  uint32 EndStation = 3;
-}
-
-message QueryReply {
-  string Result = 1;
 }
 
 message BookRequest {

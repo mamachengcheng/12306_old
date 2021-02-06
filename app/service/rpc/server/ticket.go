@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/go-redis/redis/v8"
 	"github.com/mamachengcheng/12306/app/models"
 	pb "github.com/mamachengcheng/12306/app/service/rpc/message"
 	"github.com/mamachengcheng/12306/app/utils"
@@ -13,36 +11,6 @@ import (
 
 type TicketServer struct {
 	pb.UnimplementedTicketServer
-}
-
-
-func (s *TicketServer) Query(ctx context.Context, in *pb.QueryRequest) (*pb.QueryReply, error) {
-
-	//var matrix [8][64]uint32
-	//var rt utils.RemainingTicket
-	//
-	//key := "remaining_ticket" + strconv.FormatUint(in.ScheduleID, 10)
-	//val, err := utils.RedisDB.Get(utils.RedisDBCtx, key).Result()
-	//
-	//// 若redis 中不存在则需要生成
-	//if err == redis.Nil {
-	////	var train models.Train
-	////	utils.RedisDB.Set(utils.RedisDBCtx, key, )
-	//}
-	//
-	//_ = json.Unmarshal([]byte(val), &matrix)
-	//
-	//result := make(map[int]int, 8)
-	//
-	//for i := 0; i < 8; i++ {
-	//	result[i] = int(rt.Find(in.StartStation, in.EndStation, uint32(i), matrix))
-	//}
-	//
-	//res, _ := json.Marshal(result)
-
-	return &pb.QueryReply{
-		Result: string(res),
-	}, nil
 }
 
 func (s *TicketServer) Book(ctx context.Context, in *pb.BookRequest) (*pb.BookReply, error) {

@@ -17,7 +17,6 @@ func (e *QueryExecutor) exec(coon *grpc.ClientConn, ctx context.Context, request
 	c := pb.NewTicketClient(coon)
 	if r, err := c.Query(ctx, &pb.QueryRequest{ScheduleID: request["ScheduleID"].(uint64)}); err == nil {
 
-		data["code"] = r.Code
 		data["result"] = r.Result
 	}
 	return data, err
