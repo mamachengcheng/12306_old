@@ -84,7 +84,7 @@ func (schedule *Schedule) AfterFind(tx *gorm.DB) (err error) {
 		var train Train
 		utils.MysqlDB.Where("id = ?", schedule.TrainRefer).First(&train)
 		var priceStatus []map[string]int
-		if err:= json.Unmarshal([]byte(train.TicketStatus), &priceStatus); err != nil {
+		if err := json.Unmarshal([]byte(train.TicketStatus), &priceStatus); err != nil {
 			for _, v := range priceStatus {
 				rt.Creat(v["type"], uint32(v["num"]), &matrix)
 			}
@@ -99,13 +99,11 @@ func (schedule *Schedule) AfterFind(tx *gorm.DB) (err error) {
 	startStation, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[0], 10, 64)
 	endStation, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[1], 10, 64)
 
-
-	if err:= json.Unmarshal([]byte(schedule.PriceStatus), &priceStatus); err != nil {
+	if err := json.Unmarshal([]byte(schedule.PriceStatus), &priceStatus); err != nil {
 		for _, v := range priceStatus {
-			_ := int(rt.Find(uint32(startStation), uint32(endStation), uint32(v["type"]), matrix))
+			_ = int(rt.Find(uint32(startStation), uint32(endStation), uint32(v["type"]), matrix))
 		}
 	}
-
 
 	//
 	//res, _ := json.Marshal(result)
