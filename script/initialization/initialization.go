@@ -82,7 +82,7 @@ func InitModel() {
 	//InitStation(utils.MysqlDB)
 	//InitSchedule(utils.MysqlDB)
 	//InitStop(utils.MysqlDB)
-	//InitTrainAndScheduleAndStopAndSeat(utils.MysqlDB)
+	InitTrainAndScheduleAndStopAndSeat(utils.MysqlDB)
 }
 
 func InitStation(MysqlDB *gorm.DB) {
@@ -216,6 +216,9 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 		uint_65_100[i] = 100
 	}
 	for _, val := range Data.TrainLists {
+		if val.Train.UsedTimeps == 5999 {
+			continue
+		}
 		var a []TrainSeatNumStatus
 		for _, val2 := range val.Train.TicketStatusList {
 			for i, val3 := range static.SeatType {
@@ -296,9 +299,32 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 		}
 		res2B, _ := json.Marshal(b)
 
+		var stops []models.Stop
+		utils.MysqlDB.Where("train_refer = ?", train.ID).Find(&stops)
+
+		var l, r int
+		for k, stop := range stops {
+			if stop.StartStationRefer == startStation.ID {
+				l = k
+			}
+			if stop.StartStationRefer == endStation.ID {
+				r = k
+				break
+			}
+		}
+
+		var scheduleCode uint64 = 1
+		for i := 0; i < r-l; i++ {
+			scheduleCode = scheduleCode<<1 + 1
+		}
+
+		for i := 0; i < l; i++ {
+			scheduleCode = scheduleCode << 1
+		}
+
 		schedule := models.Schedule{
 			Model:        gorm.Model{},
-			TrainNo:      val.Train.TrainNo,
+			TrainNo:      strconv.Itoa(l) + "_" + strconv.Itoa(r) + "_" + strconv.FormatUint(scheduleCode, 10) + "_" + val.Train.TrainNo,
 			TrainType:    val.Train.Sort,
 			PriceStatus:  string(res2B),
 			StartTime:    StartTime,
