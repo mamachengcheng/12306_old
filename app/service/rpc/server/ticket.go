@@ -14,29 +14,12 @@ type TicketServer struct {
 }
 
 func (s *TicketServer) Book(ctx context.Context, in *pb.BookRequest) (*pb.BookReply, error) {
-	var user models.User
-	var schedule models.Schedule
-	var train models.Ticket
-	var seats []models.Seat
+	var code int64 = 0
 
-	utils.MysqlDB.Where("username = ?", in.UserID).First(&user)
-	utils.MysqlDB.Where("id = ?", in.ScheduleID).First(&schedule)
-	utils.MysqlDB.Where("id = ?", schedule.TrainRefer).First(&train)
-	utils.MysqlDB.Where("seat_type = ?", in.SeatType).Find(&seats)
+	var seat models.Seat
 
-	scheduleCode, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[0], 10, 64)
-
-	var code int64 = -1
-
-	for _, seat := range seats {
-		if scheduleCode&seat.SeatStatus == 0 {
-			result := utils.MysqlDB.Model(&seat).Where("updated_at", seat.UpdatedAt).Update("seat_status", seat.SeatStatus|scheduleCode)
-			if result.RowsAffected == 0 {
-				code = int64(seat.ID)
-			}
-			break
-		}
-	}
+	result := utils.MysqlDB.Model(&seat).Where(" id = ? AND updated_at = ?", in.UpdatedAt).Update("seat_status", seat.SeatStatus&in.ScheduleCode)
+	code = result.RowsAffected
 
 	return &pb.BookReply{
 		Code: code,

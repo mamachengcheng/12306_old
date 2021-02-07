@@ -1,17 +1,23 @@
 package controllers
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/mamachengcheng/12306/app/middlewares"
 	"github.com/mamachengcheng/12306/app/models"
 	"github.com/mamachengcheng/12306/app/serializers"
+	"github.com/mamachengcheng/12306/app/service/mq/producer"
+	pb "github.com/mamachengcheng/12306/app/service/rpc/message"
+	"github.com/mamachengcheng/12306/app/static"
 	"github.com/mamachengcheng/12306/app/utils"
+	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var upGrader = websocket.Upgrader{
@@ -69,7 +75,7 @@ func BookTicketsAPI(c *gin.Context) {
 	validate := serializers.GetValidate()
 	err := validate.Struct(data)
 
-	if err != nil && len(data.Tickets) <= 5 && len(data.Tickets) > 0 {
+	if err != nil && len(data.Passengers) <= 5 && len(data.Passengers) > 0 {
 		response.Code = 201
 		response.Msg = "参数不合法"
 	} else {
@@ -77,47 +83,69 @@ func BookTicketsAPI(c *gin.Context) {
 
 		user := models.User{}
 		schedule := models.Schedule{}
-		train := models.Train{}
 		var seats []models.Seat
 
 		utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
 		utils.MysqlDB.Where("id = ?", data.ScheduleID).First(&schedule)
-		utils.MysqlDB.Where("id = ?", schedule.TrainRefer).First(&train)
 
-		utils.MysqlDB.Where("seat_type = ?", data.SeatType).Find(&seats)
-		scheduleCode, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[0], 10, 64)
+		utils.MysqlDB.Where("seat_type = ? AND trainRefer = ?", data.SeatType, schedule.TrainRefer).Find(&seats)
+		scheduleCode, _ := strconv.ParseUint(strings.Split(schedule.TrainNo, "_")[2], 10, 64)
 
 		var tickets []models.Ticket
 		var passenger models.Passenger
 
-		var ticketCount int64 = 0
+		advanceTicketCount := 0
+
 		for _, seat := range seats {
-			if ticketCount == int64(len(data.Tickets)) {
+			if advanceTicketCount == len(data.Passengers) {
 				break
 			}
-			utils.MysqlDB.Where("id = ?", data.Tickets[ticketCount].PassengerID).First(&passenger)
+			utils.MysqlDB.Where("id = ?", data.Passengers[advanceTicketCount].PassengerID).First(&passenger)
 			if seat.SeatStatus&scheduleCode == 0 {
 				tickets = append(tickets, models.Ticket{
 					Seat:      seat,
 					Passenger: passenger,
 				})
 			}
-			ticketCount++
+			advanceTicketCount++
 		}
 
-		if ticketCount == int64(len(data.Tickets)) {
+		if advanceTicketCount == len(data.Passengers) {
+			conn, _ := grpc.Dial(static.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
+			defer conn.Close()
+			c := pb.NewTicketClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
 			for _, ticket := range tickets {
-				result := utils.MysqlDB.Model(&ticket.Seat).Where("updated_at", ticket.Seat.UpdatedAt).Update("seat_status", ticket.Seat.SeatStatus&scheduleCode)
-				ticketCount -= result.RowsAffected
-			}
-			if ticketCount != 0 {
-				// 出票失败
+
+				r, _ := c.Book(ctx, &pb.BookRequest{
+					SeatID:       uint64(ticket.Seat.ID),
+					ScheduleCode: scheduleCode,
+					UpdatedAt:    ticket.Seat.UpdatedAt.String(),
+				})
+				if r.Code == 0 {
+					// 退票
+					producer.SendMsg("refund_ticket", "")
+					break
+				}
 			}
 		} else {
-			// 出票失败
+			response.Msg = "出票失败"
 		}
 	}
 
+	utils.StatusOKResponse(response, c)
+}
+
+func RefundTicketAPI(c *gin.Context) {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "退票成功",
+	}
+
+	producer.SendMsg("refund_ticket", "")
 	utils.StatusOKResponse(response, c)
 }
 
@@ -126,9 +154,5 @@ func CancelOrderAPI(c *gin.Context) {
 }
 
 func PayOrderAPI(c *gin.Context) {
-
-}
-
-func RefundTicketAPI(c *gin.Context) {
 
 }

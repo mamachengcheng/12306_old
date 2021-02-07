@@ -71,18 +71,18 @@ func InitModel() {
 		&models.User{},
 		&models.Passenger{},
 		&models.Order{},
-		&models.Train{},
 		&models.Ticket{},
-		&models.Station{},
-		&models.Train{},
-		&models.Schedule{},
-		&models.Stop{},
-		&models.Seat{},
+		//&models.Train{},
+		//&models.Station{},
+		//&models.Train{},
+		//&models.Schedule{},
+		//&models.Stop{},
+		//&models.Seat{},
 	)
 	//InitStation(utils.MysqlDB)
 	//InitSchedule(utils.MysqlDB)
 	//InitStop(utils.MysqlDB)
-	InitTrainAndScheduleAndStopAndSeat(utils.MysqlDB)
+	//InitTrainAndScheduleAndStopAndSeat(utils.MysqlDB)
 }
 
 func InitStation(MysqlDB *gorm.DB) {

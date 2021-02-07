@@ -43,7 +43,13 @@ type AddRegularPassenger struct {
 }
 
 type DeleteRegularPassenger struct {
-	ID uint `validate:"required" json:"id"`
+	PassengerID uint `validate:"required" json:"passenger_id"`
+}
+
+type UpdateRegularPassenger struct {
+	PassengerID   uint   `validate:"required" json:"passenger_id"`
+	MobilePhone   string `validate:"required,numeric,len=11,VerifyMobilePhoneFormat" json:"mobile_phone"`
+	PassengerType uint8  `validate:"required" json:"passenger_type"`
 }
 
 type UpdatePassword struct {

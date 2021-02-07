@@ -41,20 +41,25 @@ func RegisterAPI(c *gin.Context) {
 
 			// 进行注册
 			sex, birthday := utils.ParseIdentityCard(data.Certificate)
-
-			utils.MysqlDB.Create(&models.User{
+			user := models.User{
 				Username:    data.Username,
 				Email:       data.Email,
 				MobilePhone: data.MobilePhone,
 				Password:    data.Password,
+			}
+			passenger := models.Passenger{
+				Name:        data.Name,
+				Sex:         sex,
+				Birthday:    birthday,
+				Certificate: data.Certificate,
+				MobilePhone: data.MobilePhone,
+			}
 
-				UserInformation: models.Passenger{
-					Name:        data.Name,
-					Sex:         sex,
-					Birthday:    birthday,
-					Certificate: data.Certificate,
-					MobilePhone: data.MobilePhone,
-				}})
+			utils.MysqlDB.Create(&user)
+
+			if err := utils.MysqlDB.Model(&user).Association("Passengers").Append(&passenger); err == nil {
+				utils.MysqlDB.Model(&user).Update("user_information_id", passenger.ID)
+			}
 		}
 	}
 
@@ -106,19 +111,21 @@ func QueryUserInformationAPI(c *gin.Context) {
 
 	claims := c.MustGet("claims").(*middlewares.Claims)
 
-	user := models.User{}
-	utils.MysqlDB.Preload("UserInformation").Where("username = ?", claims.Username).First(&user)
+	var user models.User
+	var passenger models.Passenger
+	utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
+	utils.MysqlDB.Where("id = ?", user.UserInformationID).First(&passenger)
 
 	response.Data.(map[string]interface{})["user_information"] = serializers.QueryUserInformation{
 		Username:        user.Username,
-		Name:            user.UserInformation.Name,
-		Country:         user.UserInformation.Country,
-		CertificateType: static.CertificateType[user.UserInformation.CertificateType],
-		Certificate:     user.UserInformation.Certificate,
-		CheckStatus:     static.CheckStatus[user.UserInformation.CheckStatus],
+		Name:            passenger.Name,
+		Country:         passenger.Country,
+		CertificateType: static.CertificateType[passenger.CertificateType],
+		Certificate:     passenger.Certificate,
+		CheckStatus:     static.CheckStatus[passenger.CheckStatus],
 		MobilePhone:     user.MobilePhone,
 		Email:           user.Email,
-		PassengerType:   static.PassengerType[user.UserInformation.PassengerType],
+		PassengerType:   static.PassengerType[passenger.PassengerType],
 	}
 
 	utils.StatusOKResponse(response, c)
@@ -182,11 +189,6 @@ func AddRegularPassengerAPI(c *gin.Context) {
 	utils.StatusOKResponse(response, c)
 }
 
-func UpdateRegularPassengerAPI(c *gin.Context) {
-	// TODO: Complete UpdateRegularPassengerAPI.
-
-}
-
 func DeleteRegularPassengerAPI(c *gin.Context) {
 	response := utils.Response{
 		Code: 200,
@@ -205,14 +207,41 @@ func DeleteRegularPassengerAPI(c *gin.Context) {
 		claims := c.MustGet("claims").(*middlewares.Claims)
 
 		user := models.User{}
-		utils.MysqlDB.Preload("Passengers", "id = ?", data.ID).Where("username = ?", claims.Username).First(&user)
+		utils.MysqlDB.Preload("Passengers", "id = ?", data.PassengerID).Where("username = ?", claims.Username).First(&user)
 
 		if len(user.Passengers) == 0 {
 			response.Code = 202
 			response.Msg = "乘客不存在"
 		} else {
-			utils.MysqlDB.Unscoped().Where("ID = ?", data.ID).Delete(&models.Passenger{})
+			utils.MysqlDB.Unscoped().Where("ID = ?", data.PassengerID).Delete(&models.Passenger{})
 		}
+	}
+
+	utils.StatusOKResponse(response, c)
+}
+
+func UpdateRegularPassengerAPI(c *gin.Context) {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "删除成功",
+	}
+
+	data := serializers.UpdateRegularPassenger{}
+	c.BindJSON(&data)
+
+	// 输入合法性检验
+	if validate := serializers.GetValidate(); validate.Struct(data) != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		claims := c.MustGet("claims").(*middlewares.Claims)
+
+		var user models.User
+		var passenger models.Passenger
+		utils.MysqlDB.Where("username = ?", claims.Username).First(&user)
+		utils.MysqlDB.Where("id = ? AND user_refer = ?", data.PassengerID, user.ID).First(&passenger)
+		utils.MysqlDB.Model(&passenger).Updates(map[string]interface{}{"mobile_phone": data.MobilePhone, "passenger_type": data.PassengerType})
 	}
 
 	utils.StatusOKResponse(response, c)
