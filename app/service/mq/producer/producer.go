@@ -9,7 +9,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func SendMsg(topic, msgBody string) (string, error) {
+func SendMsg(topic, msgBody string) error {
 
 	cfg, _ := ini.Load(static.ConfFilePath)
 	rocketmqCfg := cfg.Section("rocketmq")
@@ -20,26 +20,26 @@ func SendMsg(topic, msgBody string) (string, error) {
 		producer.WithRetry(3),
 	)
 
-	if err == nil {
-		err = p.Start()
+	if err != nil {
+		return err
 	}
 
-	var res *primitive.SendResult
+	err = p.Start()
 
-	if err == nil {
-		msg := &primitive.Message{
-			Topic: topic,
-			Body:  []byte(msgBody),
-		}
-		res, err = p.SendSync(context.Background(), msg)
+	_, err = p.SendSync(context.Background(), &primitive.Message{
+		Topic: topic,
+		Body:  []byte(msgBody),
+	})
+
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		err = p.Shutdown()
+	err = p.Shutdown()
+
+	if err != nil {
+		return err
 	}
 
-	if res == nil {
-		return "", err
-	}
-	return res.String(), err
+	return nil
 }
