@@ -37,3 +37,5 @@ type Passenger struct {
 
 	UserRefer uint64
 }
+
+

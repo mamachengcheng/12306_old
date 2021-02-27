@@ -13,16 +13,7 @@ type Order struct {
 	Schedule      Schedule `gorm:"foreignKey:ScheduleRefer;not null" json:"schedule"`
 	ScheduleRefer uint     // Belongs to Schedule
 
+	//Price uint `gorm:"not null" json:"price"`
+
 	UserRefer uint64
-}
-
-type Ticket struct {
-	gorm.Model
-
-	Seat           Seat      `gorm:"foreignKey:SeatRefer;not null" json:"seat"`
-	Passenger      Passenger `gorm:"foreignKey:PassengerRefer;not null" json:"passenger"`
-	SeatRefer      uint      // Belongs to Seat
-	PassengerRefer uint      // Belongs to Passenger
-
-	OrderRefer uint
 }
