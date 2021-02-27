@@ -22,5 +22,9 @@ func init() {
 	dbname := mysqlCfg.Key("dbname").String()
 
 	dsn := username + ":" + password + "@tcp(" + address + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
-	MysqlDB, MysqlDBErr = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	MysqlDB, MysqlDBErr = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// 缓存预编译语句
+		PrepareStmt: true,
+	})
 }

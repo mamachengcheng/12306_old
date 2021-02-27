@@ -10,9 +10,10 @@ service Ticket {
 }
 
 message BookTicketsRequest {
-    uint64 ScheduleID = 1;
-    uint64 SeatType = 2;
-    repeated uint64 PassengerID = 3;
+    uint64 OrderID = 1;
+    uint64 ScheduleID = 2;
+    uint64 SeatType = 3;
+    repeated uint64 PassengerID = 4;
 }
 
 message BookTicketsReply {

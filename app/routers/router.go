@@ -7,10 +7,13 @@ import (
 )
 
 func InitRouter(router *gin.Engine) {
+
 	// User part router.
 	user := router.Group("/api/v1/user")
+
 	user.POST("/register", controllers.RegisterAPI)
 	user.POST("/login", controllers.LoginAPI)
+
 	user.Use(middlewares.JWTMiddleware())
 	{
 		user.GET("/query_user_information", controllers.QueryUserInformationAPI)
@@ -33,11 +36,11 @@ func InitRouter(router *gin.Engine) {
 	order := router.Group("/api/v1/user")
 	order.Use(middlewares.JWTMiddleware())
 	{
-		order.GET("refund_money", controllers.ReadyPayAPI)
+		//order.GET("refund_money", controllers.ReadyPayAPI)
 
-		order.POST("book_tickets", controllers.BookTicketsAPI)
+		order.POST("create_order", controllers.CreateOrderAPI)
 		order.POST("cancel_order", controllers.CancelOrderAPI)
-		order.POST("pay_order", controllers.PayOrderAPI)
-		order.POST("refund_ticket", controllers.RefundTicketAPI)
+	//	order.POST("pay_order", controllers.PayOrderAPI)
+	//	order.POST("refund_ticket", controllers.RefundTicketAPI)
 	}
 }

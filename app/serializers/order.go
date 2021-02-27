@@ -1,11 +1,11 @@
 package serializers
 
-type Passenger struct {
-	PassengerID uint `json:"passenger_id"`
+type CreateOrder struct {
+	ScheduleID uint64   `json:"schedule_id"`
+	SeatType   uint64   `json:"seat_type"`
+	Passengers []uint64 `json:"passengers"`
 }
 
-type BookTickets struct {
-	ScheduleID uint        `json:"schedule_id"`
-	SeatType   uint        `json:"seat_type"`
-	Passengers []Passenger `json:"passengers"`
+type CancelOrder struct {
+	OrderID uint64 `json:"order_id"`
 }

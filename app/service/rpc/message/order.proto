@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/mamachengcheng/12306/app/service";
+
+package service;
+
+service Order {
+    rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply) {}
+    rpc CancelOrder (CancelOrderRequest) returns (CancelOrderReply) {}
+}
+
+message CreateOrderRequest {
+    string Username = 1;
+    uint64 ScheduleID = 2;
+    uint64 SeatType = 3;
+    repeated uint64 PassengerID = 4;
+}
+
+message CreateOrderReply {
+    bool Result = 1;
+}
+
+message CancelOrderRequest {
+    string Username = 1;
+    uint64 OrderID = 2;
+}
+
+message CancelOrderReply {
+    bool Result = 1;
+}

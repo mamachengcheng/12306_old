@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/mamachengcheng/12306/app/service/mq/consumer"
 	pb "github.com/mamachengcheng/12306/app/service/rpc/message"
 	"github.com/mamachengcheng/12306/app/service/rpc/server"
 	"github.com/mamachengcheng/12306/app/static"
@@ -18,6 +17,7 @@ func startGrpcServer() {
 	}
 
 	s := grpc.NewServer()
+	pb.RegisterOrderServer(s, &server.OrderServer{})
 	pb.RegisterTicketServer(s, &server.TicketServer{})
 
 	log.Println("Start grpc server!")
@@ -27,18 +27,18 @@ func startGrpcServer() {
 	}
 }
 
-func startMQConsumer() {
-
-	if refundTicket, err := consumer.PushConsumerFactory("refund_ticket_consumer", "refund_ticket", static.RMQAddress); err == nil {
-		refundTicket.Start()
-	}
-
-	if refundMoney, err := consumer.PushConsumerFactory("refund_money_consumer", "refund_money", static.RMQAddress); err == nil {
-		refundMoney.Start()
-	}
-}
+//func startMQConsumer() {
+//
+//	if refundTicket, err := consumer.PushConsumerFactory("refund_ticket_consumer", "refund_ticket", static.RMQAddress); err == nil {
+//		refundTicket.Start()
+//	}
+//
+//	if refundMoney, err := consumer.PushConsumerFactory("refund_money_consumer", "refund_money", static.RMQAddress); err == nil {
+//		refundMoney.Start()
+//	}
+//}
 
 func Start() {
-	startMQConsumer()
+	//startMQConsumer()
 	startGrpcServer()
 }
