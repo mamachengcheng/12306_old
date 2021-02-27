@@ -134,7 +134,7 @@ func InitSchedule(MysqlDB *gorm.DB) {
 			Model:        gorm.Model{},
 			TrainNo:      val.Train.TrainNo,
 			TrainType:    val.Train.Sort,
-			PriceStatus:  string(res1B),
+			ScheduleStatus:  string(res1B),
 			StartTime:    StartTime,
 			EndTime:      EndTime,
 			Duration:     val.Train.UsedTimeps,
@@ -232,10 +232,8 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 				}
 			}
 		}
-		res1B, _ := json.Marshal(a)
 		train := models.Train{
 			Model:        gorm.Model{},
-			TicketStatus: string(res1B),
 		}
 		MysqlDB.Create(&train)
 
@@ -323,57 +321,51 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 		}
 
 		schedule := models.Schedule{
-			Model:        gorm.Model{},
-			TrainNo:      strconv.Itoa(l) + "_" + strconv.Itoa(r) + "_" + strconv.FormatUint(scheduleCode, 10) + "_" + val.Train.TrainNo,
-			TrainType:    val.Train.Sort,
-			PriceStatus:  string(res2B),
-			StartTime:    StartTime,
-			EndTime:      EndTime,
-			Duration:     val.Train.UsedTimeps,
-			StartStation: startStation,
-			EndStation:   endStation,
-			TrainRefer:   train.ID,
+			Model:          gorm.Model{},
+			TrainNo:        strconv.Itoa(l) + "_" + strconv.Itoa(r) + "_" + strconv.FormatUint(scheduleCode, 10) + "_" + val.Train.TrainNo,
+			TrainType:      val.Train.Sort,
+			ScheduleStatus: string(res2B),
+			StartTime:      StartTime,
+			EndTime:        EndTime,
+			Duration:       val.Train.UsedTimeps,
+			StartStation:   startStation,
+			EndStation:     endStation,
+			TrainRefer:     train.ID,
 		}
 		utils.MysqlDB.Create(&schedule)
 		_ = utils.MysqlDB.Model(&train).Association("schedules").Append(&schedule)
 
 		if val.Train.TrainNo[0] == 'G' || val.Train.TrainNo[0] == 'D' {
-			ticketTypeList := []string{"二等座"}
 			pre := []string{"A", "B", "C", "D", "E"}
 			for i := 1; i <= 2; i++ {
-				for _, val1 := range ticketTypeList {
-					for _, val2 := range pre {
-						for j := 1; j <= 4; j++ {
-							seat := models.Seat{
-								Model:      gorm.Model{},
-								SeatNo:     strconv.Itoa(j) + val2,
-								CarNumber:  uint(i),
-								SeatType:   val1,
-								SeatStatus: 0,
-								TrainRefer: train.ID,
-							}
-							utils.MysqlDB.Create(&seat)
-							_ = utils.MysqlDB.Model(&train).Association("seats").Append(&seat)
-						}
-					}
-				}
-			}
-		} else {
-			ticketTypeList := []string{"硬座"}
-			for i := 1; i <= 2; i++ {
-				for _, val1 := range ticketTypeList {
+				for _, val2 := range pre {
 					for j := 1; j <= 4; j++ {
 						seat := models.Seat{
 							Model:      gorm.Model{},
-							SeatNo:     strconv.Itoa(j),
+							SeatNo:     strconv.Itoa(j) + val2,
 							CarNumber:  uint(i),
-							SeatType:   val1,
+							SeatType:   static.SecondClass,
 							SeatStatus: 0,
 							TrainRefer: train.ID,
 						}
 						utils.MysqlDB.Create(&seat)
 						_ = utils.MysqlDB.Model(&train).Association("seats").Append(&seat)
 					}
+				}
+			}
+		} else {
+			for i := 1; i <= 2; i++ {
+				for j := 1; j <= 4; j++ {
+					seat := models.Seat{
+						Model:      gorm.Model{},
+						SeatNo:     strconv.Itoa(j),
+						CarNumber:  uint(i),
+						SeatType:   static.HardSeat,
+						SeatStatus: 0,
+						TrainRefer: train.ID,
+					}
+					utils.MysqlDB.Create(&seat)
+					_ = utils.MysqlDB.Model(&train).Association("seats").Append(&seat)
 				}
 			}
 		}
