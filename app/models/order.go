@@ -13,7 +13,7 @@ type Order struct {
 	Schedule      Schedule `gorm:"foreignKey:ScheduleRefer;not null" json:"schedule"`
 	ScheduleRefer uint     // Belongs to Schedule
 
-	//Price uint `gorm:"not null" json:"price"`
+	Price uint `gorm:"not null" json:"price"`
 
 	UserRefer uint64
 }
