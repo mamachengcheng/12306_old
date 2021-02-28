@@ -10,17 +10,21 @@ service Pay {
 }
 
 message PayMoneyRequest {
-  uint64 OrderID = 1;
+    string Username = 1;
+    uint64 OrderID = 2;
 }
 
 message PayMoneyReply {
-  int64 Code = 1;
+    bool Result = 1;
+    string Msg = 2;
 }
 
 message RefundMoneyRequest {
-  uint64 OrderID = 1;
+    string Username = 1;
+    uint64 OrderID = 2;
 }
 
 message RefundMoneyReply {
-  int64 Code = 1;
+    bool Result = 1;
+    string Msg = 2;
 }

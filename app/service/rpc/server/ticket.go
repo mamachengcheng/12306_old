@@ -31,7 +31,7 @@ func (s *TicketServer) BookTickets(ctx context.Context, in *pb.BookTicketsReques
 	var tickets []models.Ticket
 
 	// 开启事务
-	err := utils.MysqlDB.Transaction(func(tx *gorm.DB) error{
+	err := utils.MysqlDB.Transaction(func(tx *gorm.DB) error {
 		utils.MysqlDB.Where("seat_type = ? AND train_refer = ?", in.SeatType, schedule.TrainRefer).Find(&seats)
 		utils.MysqlDB.Where("id = ?", in.PassengerID).Find(&passengers)
 
@@ -40,7 +40,7 @@ func (s *TicketServer) BookTickets(ctx context.Context, in *pb.BookTicketsReques
 
 		// 出票
 		i, j := 0, 0
-		for ; i < len(seats) && j < len(passengers);{
+		for ; i < len(seats) && j < len(passengers); {
 			if seats[i].SeatStatus&scheduleCode == 0 {
 				tickets = append(tickets, models.Ticket{
 					Seat:      seats[i],
@@ -77,7 +77,18 @@ func (s *TicketServer) BookTickets(ctx context.Context, in *pb.BookTicketsReques
 func (s *TicketServer) RefundTickets(ctx context.Context, in *pb.RefundTicketsRequest) (*pb.RefundTicketsReply, error) {
 	res := true
 
-	if true {
+	log.Printf("%v", "Hello world!")
+
+	var order models.Order
+	err := utils.MysqlDB.Transaction(func(tx *gorm.DB) error {
+		utils.MysqlDB.Preload("Tickets.Seat").Preload("Tickets").Where("id = ?", in.OrderID).First(&order)
+		for _, ticket := range order.Tickets {
+			log.Printf("%v", ticket.Seat.SeatNo)
+		}
+		return nil
+	})
+
+	if err != nil {
 		res = false
 	}
 
