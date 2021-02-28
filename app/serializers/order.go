@@ -9,3 +9,11 @@ type CreateOrder struct {
 type CancelOrder struct {
 	OrderID uint64 `json:"order_id"`
 }
+
+type PayMoney struct {
+	OrderID uint64 `json:"order_id"`
+}
+
+type RefundMoney struct {
+	OrderID uint64 `json:"order_id"`
+}

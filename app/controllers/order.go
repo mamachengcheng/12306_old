@@ -88,7 +88,10 @@ func CreateOrderAPI(c *gin.Context) {
 			})
 			if err != nil || !r.Result {
 				response.Code = 202
-				response.Msg = "出票失败"
+
+				if r != nil {
+					response.Msg = r.Msg
+				}
 			}
 		} else {
 			response.Code = 202
@@ -116,9 +119,12 @@ func CancelOrderAPI(c *gin.Context) {
 		response.Code = 201
 		response.Msg = "参数不合法"
 	} else {
+
 		claims := c.MustGet("claims").(*middlewares.Claims)
 
 		conn, err := grpc.Dial(static.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
+
+
 		if err == nil {
 			defer conn.Close()
 			c := pb.NewOrderClient(conn)
@@ -129,9 +135,10 @@ func CancelOrderAPI(c *gin.Context) {
 				Username: claims.Username,
 				OrderID:  data.OrderID,
 			})
+
 			if err != nil || !r.Result {
 				response.Code = 202
-				response.Msg = "退票失败"
+				response.Msg = r.Msg
 			}
 		} else {
 			response.Code = 202
@@ -142,10 +149,94 @@ func CancelOrderAPI(c *gin.Context) {
 	utils.StatusOKResponse(response, c)
 }
 
-//func PayOrderAPI(c *gin.Context) {
-//
-//}
-//
-//func RefundTicketAPI(c *gin.Context) {
-//
-//}
+func PayMoneyAPI(c *gin.Context) {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "支付成功",
+	}
+
+	data := serializers.PayMoney{}
+	c.BindJSON(&data)
+
+	validate := serializers.GetValidate()
+	err := validate.Struct(data)
+
+	if err != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		claims := c.MustGet("claims").(*middlewares.Claims)
+
+		conn, err := grpc.Dial(static.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
+		if err == nil {
+			defer conn.Close()
+			c := pb.NewPayClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			r, err := c.PayMoney(ctx, &pb.PayMoneyRequest{
+				Username:    claims.Username,
+				OrderID: data.OrderID,
+			})
+			if err != nil || !r.Result {
+				response.Code = 202
+
+				if r != nil {
+					response.Msg = r.Msg
+				}
+			}
+		} else {
+			response.Code = 202
+			response.Msg = "支付失败"
+		}
+	}
+
+	utils.StatusOKResponse(response, c)
+}
+
+func RefundMoneyAPI(c *gin.Context) {
+	response := utils.Response{
+		Code: 200,
+		Data: make(map[string]interface{}),
+		Msg:  "退款成功",
+	}
+
+	data := serializers.RefundMoney{}
+	c.BindJSON(&data)
+
+	validate := serializers.GetValidate()
+	err := validate.Struct(data)
+
+	if err != nil {
+		response.Code = 201
+		response.Msg = "参数不合法"
+	} else {
+		claims := c.MustGet("claims").(*middlewares.Claims)
+
+		conn, err := grpc.Dial(static.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
+		if err == nil {
+			defer conn.Close()
+			c := pb.NewPayClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			r, err := c.RefundMoney(ctx, &pb.RefundMoneyRequest{
+				Username: claims.Username,
+				OrderID: data.OrderID,
+			})
+			if err != nil || !r.Result {
+				response.Code = 202
+
+				if r != nil {
+					response.Msg = r.Msg
+				}
+			}
+		} else {
+			response.Code = 202
+			response.Msg = "退款失败"
+		}
+	}
+
+	utils.StatusOKResponse(response, c)
+}

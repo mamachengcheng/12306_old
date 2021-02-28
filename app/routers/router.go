@@ -40,7 +40,7 @@ func InitRouter(router *gin.Engine) {
 
 		order.POST("create_order", controllers.CreateOrderAPI)
 		order.POST("cancel_order", controllers.CancelOrderAPI)
-	//	order.POST("pay_order", controllers.PayOrderAPI)
-	//	order.POST("refund_ticket", controllers.RefundTicketAPI)
+		order.POST("pay_money", controllers.PayMoneyAPI)
+		order.POST("refund_money", controllers.RefundMoneyAPI)
 	}
 }

@@ -17,7 +17,7 @@ func init() {
 	rocketmq := cfg.Section("rocketmq")
 	grpc := cfg.Section("grpc")
 
-	ServerAddress = server.Key("http").String() + ":" + server.Key("port").String()
-	GrpcAddress = grpc.Key("http").String() + ":" + grpc.Key("port").String()
-	RMQAddress = rocketmq.Key("http").String() + ":" + rocketmq.Key("port").String()
+	ServerAddress = server.Key("host").String() + ":" + server.Key("port").String()
+	GrpcAddress = grpc.Key("host").String() + ":" + grpc.Key("port").String()
+	RMQAddress = rocketmq.Key("host").String() + ":" + rocketmq.Key("port").String()
 }
