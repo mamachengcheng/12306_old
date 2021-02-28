@@ -131,15 +131,15 @@ func InitSchedule(MysqlDB *gorm.DB) {
 		//fmt.Println(string(res1B))
 
 		MysqlDB.Create(&models.Schedule{
-			Model:        gorm.Model{},
-			TrainNo:      val.Train.TrainNo,
-			TrainType:    val.Train.Sort,
-			ScheduleStatus:  string(res1B),
-			StartTime:    StartTime,
-			EndTime:      EndTime,
-			Duration:     val.Train.UsedTimeps,
-			StartStation: startStation,
-			EndStation:   endStation,
+			Model:          gorm.Model{},
+			TrainNo:        val.Train.TrainNo,
+			TrainType:      val.Train.Sort,
+			ScheduleStatus: string(res1B),
+			StartTime:      StartTime,
+			EndTime:        EndTime,
+			Duration:       val.Train.UsedTimeps,
+			StartStation:   startStation,
+			EndStation:     endStation,
 		})
 	}
 }
@@ -198,8 +198,10 @@ type (
 	}
 
 	TrainSeatPrice struct {
-		TicketType int     `json:"type"`
-		Price      float32 `json:"price"`
+		TicketType     int     `json:"type"`
+		Price          float32 `json:"price"`
+		InitialSeatNum int     `json:"initial_seat_num"`
+		LeftSeatNum    int     `json:"left_seat_num"`
 	}
 )
 
@@ -233,7 +235,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			}
 		}
 		train := models.Train{
-			Model:        gorm.Model{},
+			Model: gorm.Model{},
 		}
 		MysqlDB.Create(&train)
 
@@ -288,8 +290,10 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			for i, val3 := range static.SeatType {
 				if val2.Cn == val3 {
 					b = append(b, TrainSeatPrice{
-						TicketType: i,
-						Price:      val2.Price,
+						TicketType:     i,
+						Price:          val2.Price,
+						InitialSeatNum: 10,
+						LeftSeatNum:    10,
 					})
 					break
 				}
@@ -337,9 +341,9 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 
 		if val.Train.TrainNo[0] == 'G' || val.Train.TrainNo[0] == 'D' {
 			pre := []string{"A", "B", "C", "D", "E"}
-			for i := 1; i <= 2; i++ {
+			for i := 1; i <= 1; i++ {
 				for _, val2 := range pre {
-					for j := 1; j <= 4; j++ {
+					for j := 1; j <= 2; j++ {
 						seat := models.Seat{
 							Model:      gorm.Model{},
 							SeatNo:     strconv.Itoa(j) + val2,
@@ -355,7 +359,7 @@ func InitTrainAndScheduleAndStopAndSeat(MysqlDB *gorm.DB) {
 			}
 		} else {
 			for i := 1; i <= 2; i++ {
-				for j := 1; j <= 4; j++ {
+				for j := 1; j <= 5; j++ {
 					seat := models.Seat{
 						Model:      gorm.Model{},
 						SeatNo:     strconv.Itoa(j),
