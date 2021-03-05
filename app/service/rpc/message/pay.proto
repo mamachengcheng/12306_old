@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/mamachengcheng/12306/app/service";
+
+package service;
+
+service Pay {
+  rpc PayMoney (PayMoneyRequest) returns (PayMoneyReply) {}
+  rpc RefundMoney (RefundMoneyRequest) returns (RefundMoneyReply) {}
+}
+
+message PayMoneyRequest {
+    string Username = 1;
+    uint64 OrderID = 2;
+}
+
+message PayMoneyReply {
+    bool Result = 1;
+    string Msg = 2;
+}
+
+message RefundMoneyRequest {
+    string Username = 1;
+    uint64 OrderID = 2;
+}
+
+message RefundMoneyReply {
+    bool Result = 1;
+    string Msg = 2;
+}
